@@ -17,7 +17,7 @@ const ConversationItem = ({ convo, onSelect }: { convo: Conversation; onSelect: 
         <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
           {initials}
         </div>
-        {convo.online && (
+        {convo.online ? (
           <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-online rounded-full border-2 border-background" />
         )}
       </div>
