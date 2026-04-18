@@ -19,13 +19,18 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Ensure Android directory exists + local.properties
+      - name: Locate or create Android directory + local.properties
         run: |
-          mkdir -p android
-          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          ANDROID_DIR=$(find . -type d -name android | head -n 1)
+          if [ -z "$ANDROID_DIR" ]; then
+            ANDROID_DIR=android
+            mkdir -p "$ANDROID_DIR"
+          fi
+          echo "Using Android dir: $ANDROID_DIR"
+          echo "sdk.dir=$ANDROID_HOME" > "$ANDROID_DIR/local.properties"
 
       - name: Grant gradlew permission
-        run: chmod +x ./gradlew
+        run: chmod +x ./gradlew || true
 
       - name: Build APK
         run: ./gradlew assembleDebug
