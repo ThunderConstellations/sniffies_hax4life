@@ -26,6 +26,9 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
@@ -40,8 +43,10 @@ jobs:
       - name: Build React App
         run: npm run build
 
-      - name: Install Capacitor CLI
-        run: npm install -g @capacitor/cli
+      - name: Set Android SDK Path
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" \
+          > android/local.properties
 
       - name: Add Android Platform
         run: npx cap add android || true
@@ -55,17 +60,24 @@ jobs:
       - name: Build Debug APK
         run: |
           cd android
-          ./gradlew assembleDebug --stacktrace
+          ./gradlew assembleDebug \
+          --stacktrace \
+          --no-daemon \
+          -Dorg.gradle.jvmargs="-Xmx4g"
 
-      - name: Upload APK Artifact
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: sniffies-hax4life-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: sniffies-debug-apk
+          path: >
+            android/app/build/outputs/
+            apk/debug/app-debug.apk
           if-no-files-found: error
 
       - name: Upload to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: android/app/build/outputs/apk/debug/app-debug.apk
+          files: >
+            android/app/build/outputs/
+            apk/debug/app-debug.apk
