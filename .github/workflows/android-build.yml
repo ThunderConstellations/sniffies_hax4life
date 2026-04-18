@@ -19,15 +19,7 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: Locate or create Android directory + local.properties
-        run: |
-          ANDROID_DIR=$(find . -type d -name android | head -n 1)
-          if [ -z "$ANDROID_DIR" ]; then
-            ANDROID_DIR=android
-            mkdir -p "$ANDROID_DIR"
-          fi
-          echo "Using Android dir: $ANDROID_DIR"
-          echo "sdk.dir=$ANDROID_HOME" > "$ANDROID_DIR/local.properties"
+      # Removed local.properties step entirely (not required in CI)
 
       - name: Grant gradlew permission
         run: chmod +x ./gradlew || true
