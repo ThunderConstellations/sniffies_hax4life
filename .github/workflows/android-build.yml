@@ -1,4 +1,4 @@
-name: Android Build
+name: Android Build (Robust)
 
 on:
   push:
@@ -10,19 +10,66 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repo
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up Java
+      - name: Detect project type
+        id: detect
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "type=flutter" >> $GITHUB_OUTPUT
+          elif [ -f "package.json" ]; then
+            echo "type=react-native" >> $GITHUB_OUTPUT
+          elif [ -f "settings.gradle" ] || [ -f "settings.gradle.kts" ]; then
+            echo "type=native" >> $GITHUB_OUTPUT
+          else
+            echo "type=unknown" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      # Removed local.properties step entirely (not required in CI)
+      - name: Install Node deps
+        if: steps.detect.outputs.type == 'react-native'
+        run: npm install
 
-      - name: Grant gradlew permission
-        run: chmod +x ./gradlew || true
+      - name: Build React Native APK
+        if: steps.detect.outputs.type == 'react-native'
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
-      - name: Build APK
-        run: ./gradlew assembleDebug
+      - name: Setup Flutter
+        if: steps.detect.outputs.type == 'flutter'
+        uses: subosito/flutter-action@v2
+
+      - name: Flutter pub get
+        if: steps.detect.outputs.type == 'flutter'
+        run: flutter pub get
+
+      - name: Build Flutter APK
+        if: steps.detect.outputs.type == 'flutter'
+        run: flutter build apk
+
+      - name: Build Native APK
+        if: steps.detect.outputs.type == 'native'
+        run: |
+          chmod +x gradlew || true
+          ./gradlew assembleDebug
+
+      - name: Fail if unknown project
+        if: steps.detect.outputs.type == 'unknown'
+        run: |
+          echo "Could not detect project type. Repo is missing required structure.";
+          exit 1
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-output
+          path: |
+            **/build/outputs/apk/**/*.apk
