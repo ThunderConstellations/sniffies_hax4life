@@ -35,6 +35,11 @@ Transform the current React/Capacitor app into a comprehensive Android APK for S
   - App Name: `Sniffies Hax4Life`
 - Added Home Screen, Multi-Browse, and AI Integration.
 - Enhanced Bubble Overlay with draggability.
+- Created professional branding assets (`public/logo.svg`).
+- Implemented "Hax Toolbox" for managing site-specific injections.
+- Added GPS Spoofing mock for location teleportation.
+- Corrected Capacitor dependencies to stable v6.
+- Switched to free web-based heartbeat for session persistence (Enterprise Background Runner removed).
 
 ## APK Packaging Instructions
 1. Run `npm run build` to generate the `dist` folder.

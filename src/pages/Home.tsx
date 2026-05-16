@@ -1,5 +1,5 @@
 import { useAppStore } from '@/lib/store';
-import { Shield, Zap, MessageSquare, Globe, Bot, Star, Activity, Clock } from 'lucide-react';
+import { Shield, Zap, MessageSquare, Globe, Bot, Star, Activity, Clock, MapPin } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 
 const Home = () => {
@@ -84,6 +84,33 @@ const Home = () => {
                   : 'AI keys not configured'}
               </p>
               <Star className={`w-4 h-4 ${(settings.geminiKey || settings.openRouterKey) ? 'text-yellow-500 fill-yellow-500' : 'text-muted-foreground'}`} />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* GPS Spoofing Mock */}
+        <Card className="bg-card border-border shadow-sm">
+          <CardHeader className="p-4 pb-0">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <MapPin className="w-4 h-4 text-primary" />
+                <span className="font-bold text-sm">GPS Teleport</span>
+              </div>
+              <span className="text-[10px] font-bold text-online bg-online/10 px-2 py-0.5 rounded-full uppercase">Active</span>
+            </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-2">
+            <div className="flex flex-col gap-3">
+              <div className="bg-secondary/50 rounded-xl p-3 flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] text-muted-foreground font-bold uppercase">Current Target</p>
+                  <p className="text-xs font-bold">Los Angeles, CA (Mocked)</p>
+                </div>
+                <button className="text-[10px] font-bold text-primary px-3 py-1 bg-primary/10 rounded-lg">Change</button>
+              </div>
+              <p className="text-[10px] text-muted-foreground leading-tight italic">
+                Browsers and apps will see your location as the target city to unlock more profiles.
+              </p>
             </div>
           </CardContent>
         </Card>
