@@ -18,6 +18,8 @@ jobs:
         run: |
           if [ -f "pubspec.yaml" ]; then
             echo "type=flutter" >> $GITHUB_OUTPUT
+          elif grep -q "@capacitor/core" package.json; then
+            echo "type=capacitor" >> $GITHUB_OUTPUT
           elif [ -f "package.json" ]; then
             echo "type=react-native" >> $GITHUB_OUTPUT
           elif [ -f "settings.gradle" ] || [ -f "settings.gradle.kts" ]; then
@@ -32,9 +34,24 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Node.js
+        if: steps.detect.outputs.type == 'capacitor' || steps.detect.outputs.type == 'react-native'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
       - name: Install Node deps
-        if: steps.detect.outputs.type == 'react-native'
+        if: steps.detect.outputs.type == 'capacitor' || steps.detect.outputs.type == 'react-native'
         run: npm install
+
+      - name: Build Capacitor APK
+        if: steps.detect.outputs.type == 'capacitor'
+        run: |
+          npm run build
+          npx cap sync android
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: Build React Native APK
         if: steps.detect.outputs.type == 'react-native'
