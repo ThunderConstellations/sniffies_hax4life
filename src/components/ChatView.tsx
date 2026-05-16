@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
-import { ArrowLeft, Send, Pin, Star, MoreVertical, Image, Smile, Trash2, BellOff, Bell, Download, Search, X, Volume2 } from 'lucide-react';
+import { ArrowLeft, Send, Pin, Star, MoreVertical, Image, Smile, Trash2, BellOff, Bell, Download, Search, X, Volume2, Bot, Sparkles, Loader2 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { formatTimeAgo } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { callGemini, callOpenRouter } from '@/lib/ai-service';
+import { toast } from 'sonner';
 
 const QUICK_REACTIONS = ['❤️', '🔥', '😏', '👀', '😈', '💦'];
 
@@ -15,6 +17,7 @@ const ChatView = () => {
   const [searchMode, setSearchMode] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [showSoundPicker, setShowSoundPicker] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const convo = conversations.find((c) => c.id === activeConversation);
@@ -29,6 +32,35 @@ const ChatView = () => {
     if (!text.trim()) return;
     sendMessage(convo.id, text.trim());
     setText('');
+  };
+
+  const handleAiAssist = async () => {
+    const lastThemMessage = [...convo.messages].reverse().find(m => m.senderId !== 'me')?.text;
+    if (!lastThemMessage) {
+      toast.error('No message to respond to');
+      return;
+    }
+
+    setAiLoading(true);
+    const prompt = `You are a helpful assistant for a dating/social app. Provide a short, clever, and engaging response to this message: "${lastThemMessage}". Keep it brief and appropriate for the context.`;
+
+    let result;
+    if (settings.geminiKey) {
+      result = await callGemini(prompt, settings.geminiKey);
+    } else if (settings.openRouterKey) {
+      result = await callOpenRouter(prompt, settings.openRouterKey);
+    } else {
+      toast.error('Please configure AI API keys in Settings');
+      setAiLoading(false);
+      return;
+    }
+
+    if (result.error) {
+      toast.error(`AI Error: ${result.error}`);
+    } else if (result.text) {
+      setText(result.text.trim());
+    }
+    setAiLoading(false);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -259,11 +291,16 @@ const ChatView = () => {
 
       {/* Input */}
       <div className="flex items-center gap-2 p-3 bg-card border-t border-border">
-        <button className="p-2 text-muted-foreground active:scale-90">
-          <Image className="w-5 h-5" />
+        <button
+          onClick={handleAiAssist}
+          disabled={aiLoading}
+          className="p-2 text-primary active:scale-90 transition-transform relative"
+        >
+          {aiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
+          <div className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-primary rounded-full border-2 border-card" />
         </button>
         <button className="p-2 text-muted-foreground active:scale-90">
-          <Smile className="w-5 h-5" />
+          <Image className="w-5 h-5" />
         </button>
         <Input
           value={text}

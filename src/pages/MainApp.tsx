@@ -1,19 +1,21 @@
 import { useState } from 'react';
 import { useAppStore } from '@/lib/store';
-import { MessageCircle, Globe, Settings as SettingsIcon } from 'lucide-react';
+import { MessageCircle, Globe, Settings as SettingsIcon, Home as HomeIcon } from 'lucide-react';
 import ConversationList from '@/components/ConversationList';
 import ChatView from '@/components/ChatView';
 import BubbleOverlay from '@/components/BubbleOverlay';
 import Browse from '@/pages/Browse';
 import Settings from '@/pages/Settings';
+import Home from '@/pages/Home';
 
-type Tab = 'chats' | 'browse' | 'settings';
+type Tab = 'home' | 'chats' | 'browse' | 'settings';
 
 const MainApp = () => {
-  const [tab, setTab] = useState<Tab>('chats');
+  const [tab, setTab] = useState<Tab>('home');
   const { activeConversation } = useAppStore();
 
   const tabs: { id: Tab; icon: typeof MessageCircle; label: string }[] = [
+    { id: 'home', icon: HomeIcon, label: 'Home' },
     { id: 'chats', icon: MessageCircle, label: 'Chats' },
     { id: 'browse', icon: Globe, label: 'Browse' },
     { id: 'settings', icon: SettingsIcon, label: 'Settings' },
@@ -28,13 +30,14 @@ const MainApp = () => {
     <div className="flex flex-col h-screen bg-background safe-top">
       {/* Content */}
       <div className="flex-1 overflow-hidden">
+        {tab === 'home' && <Home />}
         {tab === 'chats' && <ConversationList />}
         {tab === 'browse' && <Browse />}
         {tab === 'settings' && <Settings />}
       </div>
 
-      {/* Bubble overlay (only on chats tab) */}
-      {tab === 'chats' && <BubbleOverlay />}
+      {/* Bubble overlay (only on chats/home tab) */}
+      {(tab === 'chats' || tab === 'home') && <BubbleOverlay />}
 
       {/* Bottom nav */}
       <nav className="flex items-center border-t border-border bg-card safe-bottom">
