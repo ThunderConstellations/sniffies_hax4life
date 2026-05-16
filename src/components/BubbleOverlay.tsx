@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
-import { MessageCircle, X, Send } from 'lucide-react';
+import { MessageCircle, X, Send, Maximize2, Minimize2, Globe, ShieldCheck } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { formatTimeAgo } from '@/lib/utils';
 
 const BubbleOverlay = () => {
   const { conversations, settings, sendMessage, setActiveConversation } = useAppStore();
   const [expanded, setExpanded] = useState(false);
+  const [position, setPosition] = useState({ x: 0, y: 0 });
+  const [isDragging, setIsDragging] = useState(false);
   const [quickReplyId, setQuickReplyId] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
@@ -22,17 +24,45 @@ const BubbleOverlay = () => {
     width: `${settings.bubbleSize}px`,
     height: `${settings.bubbleSize}px`,
     opacity: settings.bubbleOpacity / 100,
+    transform: `translate(${position.x}px, ${position.y}px)`,
+  };
+
+  const handleTouchStart = () => setIsDragging(true);
+  const handleTouchEnd = () => setIsDragging(false);
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (!isDragging) return;
+    const touch = e.touches[0];
+
+    // Smooth bounds-aware dragging
+    const x = Math.min(Math.max(touch.clientX - window.innerWidth + 28, -window.innerWidth + 56), 0);
+    const y = Math.min(Math.max(touch.clientY - window.innerHeight + 120, -window.innerHeight + 150), 0);
+
+    setPosition({ x, y });
   };
 
   return (
-    <div className="fixed bottom-20 right-4 z-50">
+    <div
+      className="fixed bottom-24 right-6 z-50 select-none"
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       {expanded && (
-        <div className="mb-3 w-72 bg-card border border-border rounded-2xl shadow-2xl animate-slide-up overflow-hidden">
-          <div className="p-3 border-b border-border flex items-center justify-between">
-            <span className="font-semibold text-sm text-foreground">Quick Messages</span>
-            <button onClick={() => setExpanded(false)}>
-              <X className="w-4 h-4 text-muted-foreground" />
-            </button>
+        <div className="mb-3 w-80 bg-card border border-border rounded-2xl shadow-2xl animate-slide-up overflow-hidden transform"
+          style={{ transform: `translate(${position.x}px, ${position.y}px)` }}
+        >
+          <div className="p-3 bg-primary/5 border-b border-border flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="w-4 h-4 text-primary" />
+              <span className="font-bold text-xs text-foreground uppercase tracking-tight">Hax Quick Panel</span>
+            </div>
+            <div className="flex gap-2">
+              <button onClick={() => setExpanded(false)} className="p-1 hover:bg-secondary rounded-full">
+                <Minimize2 className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+              <button onClick={() => setExpanded(false)} className="p-1 hover:bg-secondary rounded-full">
+                <X className="w-3.5 h-3.5 text-muted-foreground" />
+              </button>
+            </div>
           </div>
           <div className="max-h-72 overflow-y-auto">
             {conversations
@@ -107,10 +137,12 @@ const BubbleOverlay = () => {
       {/* Bubble */}
       <button
         onClick={() => setExpanded(!expanded)}
+        onTouchStart={handleTouchStart}
         style={bubbleStyle}
-        className="relative bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/30 active:scale-90 transition-transform animate-pulse-bubble"
+        className={`relative bg-primary rounded-full flex items-center justify-center shadow-lg shadow-primary/40 active:scale-95 transition-all ${isDragging ? 'scale-110 opacity-70' : 'animate-pulse-bubble'}`}
       >
-        <MessageCircle className="w-6 h-6 text-primary-foreground" />
+        <div className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20" />
+        <MessageCircle className="w-6 h-6 text-primary-foreground relative z-10" />
         {totalUnread > 0 && (
           <span className="absolute -top-1 -right-1 min-w-5 h-5 bg-destructive text-destructive-foreground text-[10px] font-bold rounded-full flex items-center justify-center px-1">
             {totalUnread}

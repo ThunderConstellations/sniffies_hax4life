@@ -4,7 +4,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Shield, Bell, Wifi, Battery, Download, Eye, Lock, Palette, Type, Moon, FileText, Vibrate } from 'lucide-react';
+import { Shield, Bell, Wifi, Battery, Download, Eye, Lock, Palette, Type, Moon, FileText, Vibrate, Bot, Key } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Settings = () => {
@@ -308,6 +308,51 @@ const Settings = () => {
             >
               <FileText className="w-4 h-4" /> Export All Chats as JSON
             </button>
+          </CardContent>
+        </Card>
+
+        {/* AI Integration */}
+        <Card className="border-border bg-card">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-sm flex items-center gap-2">
+              <Bot className="w-4 h-4 text-primary" /> AI Assistant
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 space-y-4">
+            <div>
+              <label className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1 uppercase font-bold tracking-tighter">
+                <Key className="w-3 h-3" /> Google Gemini API Key
+              </label>
+              <Input
+                type="password"
+                placeholder="Enter Gemini Key..."
+                value={settings.geminiKey}
+                onChange={(e) => updateSettings({ geminiKey: e.target.value })}
+                className="bg-secondary border-none h-9 text-sm"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1 uppercase font-bold tracking-tighter">
+                <Key className="w-3 h-3" /> OpenRouter API Key
+              </label>
+              <Input
+                type="password"
+                placeholder="Enter OpenRouter Key..."
+                value={settings.openRouterKey}
+                onChange={(e) => updateSettings({ openRouterKey: e.target.value })}
+                className="bg-secondary border-none h-9 text-sm"
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-foreground">Background Persistence</p>
+                <p className="text-[11px] text-muted-foreground">Keep sessions active</p>
+              </div>
+              <Switch
+                checked={settings.stayOnlineBackground}
+                onCheckedChange={(v) => updateSettings({ stayOnlineBackground: v })}
+              />
+            </div>
           </CardContent>
         </Card>
 

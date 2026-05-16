@@ -53,6 +53,10 @@ export interface AppSettings {
   showReadReceipts: boolean;
   showTypingIndicator: boolean;
   mediaAutoDownload: boolean;
+  geminiKey: string;
+  openRouterKey: string;
+  activePlatform: 'sniffies' | 'nkp' | 'barebackrt' | 'grindr';
+  stayOnlineBackground: boolean;
 }
 
 interface AppState {
@@ -197,6 +201,10 @@ export const useAppStore = create<AppState>()(
         showReadReceipts: true,
         showTypingIndicator: true,
         mediaAutoDownload: true,
+        geminiKey: '',
+        openRouterKey: '',
+        activePlatform: 'sniffies',
+        stayOnlineBackground: true,
       },
       setUnlocked: (val) => set({ unlocked: val }),
       setActiveConversation: (id) => {
