@@ -33,7 +33,7 @@ export const callOpenRouter = async (prompt: string, apiKey: string): Promise<AI
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-3.5-turbo', // Default free/cheap model
+        model: 'google/gemma-7b-it:free', // Default free model
         messages: [{ role: 'user', content: prompt }]
       })
     });
