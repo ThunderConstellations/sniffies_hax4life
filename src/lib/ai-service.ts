@@ -33,7 +33,7 @@ export const callOpenRouter = async (prompt: string, apiKey: string): Promise<AI
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'openai/gpt-3.5-turbo', // Default free/cheap model
+        model: 'google/gemma-7b-it:free', // Default free model
         messages: [{ role: 'user', content: prompt }]
       })
     });
@@ -43,4 +43,18 @@ export const callOpenRouter = async (prompt: string, apiKey: string): Promise<AI
   } catch (error) {
     return { text: '', error: error instanceof Error ? error.message : 'Unknown OpenRouter error' };
   }
+};
+
+export const generateChatResponse = async (messages: { role: string; content: string }[], settings: any): Promise<string> => {
+  const prompt = messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
+
+  if (settings.geminiKey) {
+    const res = await callGemini(prompt, settings.geminiKey);
+    return res.text;
+  } else if (settings.openRouterKey) {
+    const res = await callOpenRouter(prompt, settings.openRouterKey);
+    return res.text;
+  }
+
+  return 'Please set API keys in settings.';
 };

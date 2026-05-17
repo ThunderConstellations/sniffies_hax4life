@@ -57,6 +57,7 @@ export interface AppSettings {
   openRouterKey: string;
   activePlatform: 'sniffies' | 'nkp' | 'barebackrt' | 'grindr';
   stayOnlineBackground: boolean;
+  nativeBubblesEnabled: boolean;
 }
 
 interface AppState {
@@ -205,6 +206,7 @@ export const useAppStore = create<AppState>()(
         openRouterKey: '',
         activePlatform: 'sniffies',
         stayOnlineBackground: true,
+        nativeBubblesEnabled: false,
       },
       setUnlocked: (val) => set({ unlocked: val }),
       setActiveConversation: (id) => {

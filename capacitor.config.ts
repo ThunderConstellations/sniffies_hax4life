@@ -14,16 +14,6 @@ const config: CapacitorConfig = {
       keystoreAlias: undefined,
     },
   },
-  plugins: {
-    BackgroundRunner: {
-      label: 'com.thunderconstellations.sniffieshax.background',
-      src: 'src/lib/background-worker.ts',
-      event: 'checkSession',
-      repeat: true,
-      interval: 15,
-      autoStart: true,
-    },
-  },
 };
 
 export default config;

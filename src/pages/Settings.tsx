@@ -353,6 +353,19 @@ const Settings = () => {
                 onCheckedChange={(v) => updateSettings({ stayOnlineBackground: v })}
               />
             </div>
+            <div className="flex items-center justify-between border-t border-border pt-3">
+              <div>
+                <p className="text-sm text-foreground">System Overlay Bubbles</p>
+                <p className="text-[11px] text-muted-foreground">FB Messenger style (requires permission)</p>
+              </div>
+              <Switch
+                checked={settings.nativeBubblesEnabled}
+                onCheckedChange={(v) => {
+                  if (v) toast.info('Please grant "Display over other apps" permission in Android settings');
+                  updateSettings({ nativeBubblesEnabled: v });
+                }}
+              />
+            </div>
           </CardContent>
         </Card>
 

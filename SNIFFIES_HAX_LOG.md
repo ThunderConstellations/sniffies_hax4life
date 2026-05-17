@@ -35,10 +35,31 @@ Transform the current React/Capacitor app into a comprehensive Android APK for S
   - App Name: `Sniffies Hax4Life`
 - Added Home Screen, Multi-Browse, and AI Integration.
 - Enhanced Bubble Overlay with draggability.
+- Created professional branding assets (`public/logo.svg`).
+- Implemented "Hax Toolbox" for managing site-specific injections.
+- Added GPS Spoofing mock for location teleportation.
+- Corrected Capacitor dependencies to stable v6.
+- Switched to free web-based heartbeat for session persistence (Enterprise Background Runner removed).
 
 ## APK Packaging Instructions
 1. Run `npm run build` to generate the `dist` folder.
 2. Run `npx cap sync` to sync web assets with Android project.
 3. Open Android Studio: `npx cap open android`.
-4. Update `AndroidManifest.xml` to request necessary permissions (Internet, Background Service).
-5. Build APK: `Build > Build Bundle(s) / APK(s) > Build APK(s)`.
+4. Update `AndroidManifest.xml` to request necessary permissions:
+   - `android.permission.INTERNET`
+   - `android.permission.SYSTEM_ALERT_WINDOW` (For FB Messenger-style bubbles)
+   - `android.permission.FOREGROUND_SERVICE`
+5. **Implement Native Bubbles**: To have bubbles work outside the app, you must implement an Android `Service` that uses `WindowManager` to add a view to the screen.
+   - Recommended Plugin: `capacitor-floating-bubble` (Community).
+   - Alternatively, use the Android "Bubbles" API for Android 11+.
+6. Build APK: `Build > Build Bundle(s) / APK(s) > Build APK(s)`.
+
+## Native Bubble Research
+- **System Alert Window**: Required for drawing over other apps.
+- **Background Service**: Required to keep the bubble alive when the main app is closed.
+- **Communication**: Use Capacitor's `addListener` or a custom bridge to send data from the background service to the React UI when the bubble is clicked.
+
+## 🛠️ Code Review & Refinement (v1.1)
+- **Dependency Fix**: Added `zustand` to `package.json` to fix build failures.
+- **Iframe Bypass**: Noted that standard browsers block framing (SOP). The HUD now includes a reminder that the final APK utilizes the Capacitor WebView which allows for proxying/header manipulation to bypass `X-Frame-Options`.
+- **Native Implementation**: Added Kotlin snippets for `WindowManager` and `evaluateJavascript` for true system-level bubbles and site injection in the log instructions.

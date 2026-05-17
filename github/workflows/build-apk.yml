@@ -1,47 +1,133 @@
-
-name: Build APK
+name: Android Build (Robust)
 
 on:
   push:
     branches:
       - main
-  release:
-    types:
-      - created
+  pull_request:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
+    permissions:
+      contents: read
+
     steps:
-      - name: Check out the repository
+      # ----------------------------------------
+      # Checkout repository
+      # ----------------------------------------
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
+      # ----------------------------------------
+      # Detect project type
+      # ----------------------------------------
+      - name: Detect project type
+        id: detect
+        shell: bash
+        run: |
+          if [ -f "pubspec.yaml" ]; then
+            echo "type=flutter" >> $GITHUB_OUTPUT
+          elif [ -f "package.json" ]; then
+            echo "type=react-native" >> $GITHUB_OUTPUT
+          elif [ -f "android/settings.gradle" ] || [ -f "android/settings.gradle.kts" ] || [ -f "settings.gradle" ] || [ -f "settings.gradle.kts" ]; then
+            echo "type=native" >> $GITHUB_OUTPUT
+          else
+            echo "type=unknown" >> $GITHUB_OUTPUT
+          fi
+
+      # ----------------------------------------
+      # Setup Java
+      # ----------------------------------------
+      - name: Setup Java
+        uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'adopt'
+          distribution: temurin
+          java-version: "17"
+          cache: gradle
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      # ----------------------------------------
+      # Setup Android SDK
+      # ----------------------------------------
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      # ----------------------------------------
+      # React Native
+      # ----------------------------------------
+      - name: Setup Node
+        if: steps.detect.outputs.type == 'react-native'
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: 20
+          cache: npm
 
-      - name: Install npm dependencies
-        run: npm install
+      - name: Install Node dependencies
+        if: steps.detect.outputs.type == 'react-native'
+        run: npm ci
 
-      - name: Run npm build
-        run: npm run build
+      - name: Build React Native APK
+        if: steps.detect.outputs.type == 'react-native'
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --stacktrace
 
-      - name: Add Android platform with Capacitor
-        run: npx cap add android
-
-      - name: Build the APK
-        run: npx cap build android
-
-      - name: Upload APK as artifact
-        uses: actions/upload-artifact@v3
+      # ----------------------------------------
+      # Flutter
+      # ----------------------------------------
+      - name: Setup Flutter
+        if: steps.detect.outputs.type == 'flutter'
+        uses: subosito/flutter-action@v2
         with:
-          name: apk
-          path: android/app/build/outputs/apk/release/*.apk
+          channel: stable
+          cache: true
+
+      - name: Flutter pub get
+        if: steps.detect.outputs.type == 'flutter'
+        run: flutter pub get
+
+      - name: Build Flutter APK
+        if: steps.detect.outputs.type == 'flutter'
+        run: flutter build apk --debug
+
+      # ----------------------------------------
+      # Native Android
+      # ----------------------------------------
+      - name: Build Native APK
+        if: steps.detect.outputs.type == 'native'
+        run: |
+          if [ -f "./gradlew" ]; then
+            chmod +x ./gradlew
+            ./gradlew assembleDebug --stacktrace
+          elif [ -f "./android/gradlew" ]; then
+            cd android
+            chmod +x ./gradlew
+            ./gradlew assembleDebug --stacktrace
+          else
+            echo "Gradle wrapper not found"
+            exit 1
+          fi
+
+      # ----------------------------------------
+      # Unknown project type
+      # ----------------------------------------
+      - name: Fail if unknown project
+        if: steps.detect.outputs.type == 'unknown'
+        run: |
+          echo "Could not detect project type."
+          echo "Missing Flutter, React Native, or Android Gradle files."
+          exit 1
+
+      # ----------------------------------------
+      # Upload APK artifacts
+      # ----------------------------------------
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-output
+          path: |
+            **/build/outputs/apk/debug/*.apk
+            **/build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: error
