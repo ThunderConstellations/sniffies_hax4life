@@ -63,3 +63,19 @@ Transform the current React/Capacitor app into a comprehensive Android APK for S
 - **Dependency Fix**: Added `zustand` to `package.json` to fix build failures.
 - **Iframe Bypass**: Noted that standard browsers block framing (SOP). The HUD now includes a reminder that the final APK utilizes the Capacitor WebView which allows for proxying/header manipulation to bypass `X-Frame-Options`.
 - **Native Implementation**: Added Kotlin snippets for `WindowManager` and `evaluateJavascript` for true system-level bubbles and site injection in the log instructions.
+
+## Phase 2: Advanced AI & Graphical Bubbles (In Progress)
+Goal: Implement 10+ advanced features in the bubble overlay, focusing on AI automation, style mimicry, and stealth.
+
+### 10 Proposed Bubble Features:
+1.  **AI Auto-Pilot (Style Mimicry)**: Analyzes past messages to reply in the user's exact "voice" (slang, punctuation).
+2.  **AI Vision Hunter**: Users input a "Target Type" (e.g., "muscle guys"). AI scans nearby profile thumbnails via Gemini Vision and pings if a match is found.
+3.  **Ghost Heatmap**: A miniaturized, high-contrast map in the bubble showing active "hotspots".
+4.  **Decoy Swap (Stealth)**: Quick-gesture that changes the bubble icon to a system-style icon (e.g., Weather).
+5.  **Rapid Response Macros**: One-tap buttons for common interactions: "Location sent", "Looking?".
+6.  **Distance Proximity Alert**: Bubble ring pulses faster as a "Starred" user moves closer.
+7.  **Auto-Greet (Cruising)**: Automatically sends a customized intro to users who "Viewed You".
+8.  **Catfish Guard**: AI analysis of profile images to detect fakes or stock photos.
+9.  **Quick-Media Drawer**: Horizontal scroll of user's "Top Pics" for instant sending.
+10. **Mood Sync**: Bubble's glow color changes based on "Looking for" status (Red=RN, Blue=Chatting).
+11. **Auto-Pilot Preference Filtering**: AI filters incoming chats based on physical preferences and block-lists "red flags".

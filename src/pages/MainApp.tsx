@@ -7,10 +7,12 @@ import BubbleOverlay from '@/components/BubbleOverlay';
 import Browse from '@/pages/Browse';
 import Settings from '@/pages/Settings';
 import Home from '@/pages/Home';
+import { useAutoPilot } from '@/lib/autopilot-service';
 
 type Tab = 'home' | 'chats' | 'browse' | 'settings';
 
 const MainApp = () => {
+  useAutoPilot(); // Initialize background AI services
   const [tab, setTab] = useState<Tab>('home');
   const { activeConversation } = useAppStore();
 

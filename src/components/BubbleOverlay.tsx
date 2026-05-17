@@ -4,17 +4,19 @@ import {
   MessageCircle, X, Send, Maximize2, Minimize2,
   Globe, ShieldCheck, Sparkles, Map as MapIcon,
   Settings as SettingsIcon, LayoutGrid, Trash2,
-  Zap
+  Zap, Target, Battery, Sun, Ghost, Flame,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { formatTimeAgo } from '@/lib/utils';
 import BubbleRadar from './BubbleRadar';
 import BubbleAIHelper from './BubbleAIHelper';
+import BubbleHunter from './BubbleHunter';
 
 const BubbleOverlay = () => {
   const { conversations, settings, sendMessage, setActiveConversation, updateSettings } = useAppStore();
   const [expanded, setExpanded] = useState(false);
-  const [activeTab, setActiveTab] = useState<'chats' | 'radar' | 'settings'>('chats');
+  const [activeTab, setActiveTab] = useState<'chats' | 'radar' | 'hunter' | 'media' | 'settings'>('chats');
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [showPlatformSwitcher, setShowPlatformSwitcher] = useState(false);
@@ -67,6 +69,23 @@ const BubbleOverlay = () => {
   };
 
   if (!isVisible) return null;
+
+  const getBubbleIcon = () => {
+    switch (settings.decoyMode) {
+      case 'battery': return <Battery className="w-6 h-6 text-green-500" />;
+      case 'weather': return <Sun className="w-6 h-6 text-yellow-500" />;
+      default: return <MessageCircle className={`w-6 h-6 text-primary-foreground relative z-10 transition-transform ${isDragging ? 'scale-75' : 'group-hover:scale-110'}`} />;
+    }
+  };
+
+  const getMoodColor = () => {
+    switch (settings.moodStatus) {
+      case 'rightnow': return 'shadow-red-500/40 bg-red-600';
+      case 'chatting': return 'shadow-blue-500/40 bg-blue-600';
+      case 'browsing': return 'shadow-orange-500/40 bg-orange-600';
+      default: return 'shadow-primary/40 bg-primary';
+    }
+  };
 
   const bubbleStyle = {
     width: `${settings.bubbleSize}px`,
@@ -160,6 +179,20 @@ const BubbleOverlay = () => {
               Radar
             </button>
             <button
+              onClick={() => setActiveTab('hunter')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-bold transition-all ${activeTab === 'hunter' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}
+            >
+              <Target className="w-3.5 h-3.5" />
+              Hunter
+            </button>
+            <button
+              onClick={() => setActiveTab('media')}
+              className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-bold transition-all ${activeTab === 'media' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}
+            >
+              <ImageIcon className="w-3.5 h-3.5" />
+              Pics
+            </button>
+            <button
               onClick={() => setActiveTab('settings')}
               className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-[11px] font-bold transition-all ${activeTab === 'settings' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}
             >
@@ -214,6 +247,20 @@ const BubbleOverlay = () => {
 
                     {quickReplyId === c.id && (
                       <div className="mt-3 space-y-2 animate-in slide-in-from-top-2">
+                        <div className="flex flex-wrap gap-1 mb-2">
+                          {['Looking?', 'Location?', 'Pic?', 'Wassup', '🔥'].map((macro) => (
+                            <button
+                              key={macro}
+                              onClick={() => {
+                                sendMessage(c.id, macro);
+                                setQuickReplyId(null);
+                              }}
+                              className="px-2 py-1 bg-primary/5 border border-primary/10 rounded-md text-[9px] font-bold text-primary hover:bg-primary hover:text-white transition-all"
+                            >
+                              {macro}
+                            </button>
+                          ))}
+                        </div>
                         <BubbleAIHelper
                           conversationId={c.id}
                           onSelect={(text) => {
@@ -245,30 +292,87 @@ const BubbleOverlay = () => {
             )}
 
             {activeTab === 'radar' && <BubbleRadar />}
+            {activeTab === 'hunter' && <BubbleHunter />}
+            {activeTab === 'media' && (
+              <div className="p-4 space-y-4">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase ml-1">Quick Send Media</p>
+                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex-shrink-0 w-24 h-32 bg-secondary rounded-xl overflow-hidden relative group cursor-pointer border border-transparent hover:border-primary transition-all">
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                        <p className="text-[9px] text-white font-bold">Send Now</p>
+                      </div>
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground">
+                         <ImageIcon className="w-6 h-6 opacity-20" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button className="w-full py-2.5 bg-secondary text-foreground text-[10px] font-bold rounded-xl border border-dashed border-border">
+                  Upload to Quick Drawer
+                </button>
+              </div>
+            )}
 
             {activeTab === 'settings' && (
               <div className="p-4 space-y-4">
-                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Sparkles className="w-5 h-5 text-primary" />
-                    <span className="text-sm font-black text-foreground uppercase tracking-tight">AI Wingman</span>
-                  </div>
-                  <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
-                    Enable AI-powered suggested replies in the chat view.
-                  </p>
-                  <button className="w-full py-2 bg-primary text-primary-foreground text-xs font-bold rounded-xl shadow-lg shadow-primary/20">
-                    Configure AI Keys
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    onClick={() => updateSettings({ decoyMode: settings.decoyMode === 'chat' ? 'battery' : 'chat' })}
+                    className={`p-3 rounded-xl border flex flex-col items-start gap-2 transition-all ${settings.decoyMode !== 'chat' ? 'bg-primary/10 border-primary' : 'bg-secondary/50 border-transparent'}`}
+                  >
+                    <Shield className="w-4 h-4 text-primary" />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase">Stealth</p>
+                      <p className="text-[9px] text-muted-foreground">Decoy Mode</p>
+                    </div>
+                  </button>
+                  <button
+                    onClick={() => updateSettings({ moodStatus: settings.moodStatus === 'active' ? 'rightnow' : 'active' })}
+                    className={`p-3 rounded-xl border flex flex-col items-start gap-2 transition-all ${settings.moodStatus === 'rightnow' ? 'bg-red-500/10 border-red-500' : 'bg-secondary/50 border-transparent'}`}
+                  >
+                    <Flame className="w-4 h-4 text-red-500" />
+                    <div>
+                      <p className="text-[10px] font-bold uppercase">Mood</p>
+                      <p className="text-[9px] text-muted-foreground">{settings.moodStatus}</p>
+                    </div>
                   </button>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="p-3 bg-secondary/50 rounded-xl">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Ghost Mode</p>
-                    <p className="text-xs font-bold text-foreground">Active</p>
+                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <Zap className="w-5 h-5 text-primary" />
+                      <span className="text-sm font-black text-foreground uppercase tracking-tight">AI Autopilot</span>
+                    </div>
+                    <button
+                      onClick={() => updateSettings({ autoPilotEnabled: !settings.autoPilotEnabled })}
+                      className={`w-10 h-5 rounded-full transition-colors relative ${settings.autoPilotEnabled ? 'bg-primary' : 'bg-muted'}`}
+                    >
+                      <div className={`absolute top-1 w-3 h-3 bg-white rounded-full transition-all ${settings.autoPilotEnabled ? 'left-6' : 'left-1'}`} />
+                    </button>
                   </div>
-                  <div className="p-3 bg-secondary/50 rounded-xl">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase mb-1">Hax Active</p>
-                    <p className="text-xs font-bold text-foreground">12/12</p>
+                  <p className="text-[11px] text-muted-foreground leading-relaxed mb-4">
+                    Replies automatically to incoming chats using your voice and style.
+                  </p>
+                  <div className="flex gap-2">
+                    <button className="flex-1 py-2 bg-secondary text-foreground text-[10px] font-bold rounded-lg">
+                      Train Mimicry
+                    </button>
+                    <button className="flex-1 py-2 bg-secondary text-foreground text-[10px] font-bold rounded-lg">
+                      Block-list
+                    </button>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-secondary/30 rounded-2xl border border-border">
+                   <div className="flex items-center gap-3 mb-3">
+                    <Ghost className="w-5 h-5 text-muted-foreground" />
+                    <span className="text-sm font-bold text-foreground">Ghost Presence</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <p className="text-[11px] text-muted-foreground">Pulse online every 5m</p>
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                   </div>
                 </div>
               </div>
@@ -288,10 +392,10 @@ const BubbleOverlay = () => {
         onMouseDown={handleTouchStart}
         onTouchStart={handleTouchStart}
         style={bubbleStyle}
-        className={`absolute bottom-24 right-6 pointer-events-auto rounded-full flex items-center justify-center shadow-xl transition-all duration-200 group ${isDragging ? 'scale-90 cursor-grabbing' : 'animate-pulse-bubble cursor-pointer'} ${expanded ? 'scale-0 opacity-0' : 'scale-100 opacity-100'} ${isOverExit ? 'bg-destructive shadow-destructive/40' : 'bg-primary shadow-primary/40'}`}
+        className={`absolute bottom-24 right-6 pointer-events-auto rounded-full flex items-center justify-center shadow-xl transition-all duration-200 group ${isDragging ? 'scale-90 cursor-grabbing' : 'animate-pulse-bubble cursor-pointer'} ${expanded ? 'scale-0 opacity-0' : 'scale-100 opacity-100'} ${isOverExit ? 'bg-destructive shadow-destructive/40' : getMoodColor()}`}
       >
         <div className={`absolute inset-0 rounded-full bg-inherit animate-ping opacity-20 ${expanded ? 'hidden' : ''}`} />
-        <MessageCircle className={`w-6 h-6 text-primary-foreground relative z-10 transition-transform ${isDragging ? 'scale-75' : 'group-hover:scale-110'}`} />
+        {getBubbleIcon()}
 
         {totalUnread > 0 && !isDragging && (
           <span className="absolute -top-1 -right-1 min-w-5 h-5 bg-destructive text-destructive-foreground text-[10px] font-black rounded-full flex items-center justify-center px-1.5 shadow-lg animate-bounce">

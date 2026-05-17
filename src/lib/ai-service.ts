@@ -46,15 +46,61 @@ export const callOpenRouter = async (prompt: string, apiKey: string): Promise<AI
 };
 
 export const generateChatResponse = async (messages: { role: string; content: string }[], settings: any): Promise<string> => {
-  const prompt = messages.map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
+  let promptPrefix = "";
+
+  if (settings.autoPilotMimicry) {
+    promptPrefix = `
+      CONTEXT: You are acting as an AI autopilot for a user on a cruising/dating app.
+      YOUR GOAL: Reply to the latest message in the user's EXACT voice, style, and persona.
+      MIMICRY DATA: Analyze the user's previous messages for slang, punctuation style (or lack thereof), emoji usage, and brevity.
+      STRICTION: Keep it natural, casual, and brief. Do not sound like an AI.
+    `;
+  } else {
+    promptPrefix = "You are a helpful assistant for a cruising app. Reply casually.";
+  }
+
+  const history = messages.map(m => `${m.role === 'user' ? 'Me' : 'Them'}: ${m.content}`).join('\n');
+  const finalPrompt = `${promptPrefix}\n\nRecent Conversation History:\n${history}\n\nSuggested Response:`;
 
   if (settings.geminiKey) {
-    const res = await callGemini(prompt, settings.geminiKey);
+    const res = await callGemini(finalPrompt, settings.geminiKey);
     return res.text;
   } else if (settings.openRouterKey) {
-    const res = await callOpenRouter(prompt, settings.openRouterKey);
+    const res = await callOpenRouter(finalPrompt, settings.openRouterKey);
     return res.text;
   }
 
   return 'Please set API keys in settings.';
+};
+
+/**
+ * AI Vision Hunter: Scans a profile image against user preferences
+ */
+export const scanProfileVision = async (imageUrl: string, preferences: string, apiKey: string): Promise<{ match: boolean; reasoning: string }> => {
+  if (!apiKey) return { match: false, reasoning: 'API key missing' };
+
+  try {
+    const prompt = `Analyze this profile picture. Does this person match these preferences: "${preferences}"?
+    Reply with ONLY a JSON object: {"match": boolean, "reasoning": "brief explanation"}`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { text: prompt },
+            { inline_data: { mime_type: "image/jpeg", data: imageUrl.split(',')[1] || imageUrl } }
+          ]
+        }]
+      })
+    });
+
+    const data = await response.json();
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    return JSON.parse(text.replace(/```json|```/g, ''));
+  } catch (error) {
+    console.error('Vision Error:', error);
+    return { match: false, reasoning: 'Error scanning image' };
+  }
 };

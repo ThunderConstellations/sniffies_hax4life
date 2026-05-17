@@ -58,6 +58,15 @@ export interface AppSettings {
   activePlatform: 'sniffies' | 'nkp' | 'barebackrt' | 'grindr';
   stayOnlineBackground: boolean;
   nativeBubblesEnabled: boolean;
+  // AI Auto-Pilot Settings
+  autoPilotEnabled: boolean;
+  autoPilotMimicry: boolean;
+  autoPilotTargetType: string;
+  autoGreetEnabled: boolean;
+  autoGreetMessage: string;
+  // Stealth & Graphics
+  decoyMode: 'chat' | 'battery' | 'weather';
+  moodStatus: 'active' | 'rightnow' | 'chatting' | 'browsing';
 }
 
 interface AppState {
@@ -207,6 +216,13 @@ export const useAppStore = create<AppState>()(
         activePlatform: 'sniffies',
         stayOnlineBackground: true,
         nativeBubblesEnabled: false,
+        autoPilotEnabled: false,
+        autoPilotMimicry: true,
+        autoPilotTargetType: 'athletic, masculine',
+        autoGreetEnabled: false,
+        autoGreetMessage: 'Hey, saw you viewed me! What\'s up?',
+        decoyMode: 'chat',
+        moodStatus: 'active',
       },
       setUnlocked: (val) => set({ unlocked: val }),
       setActiveConversation: (id) => {
