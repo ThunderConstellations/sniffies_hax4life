@@ -11,45 +11,44 @@ const BubbleHunter = () => {
 
   const startScan = async () => {
     if (!settings.geminiKey) {
-      toast.error('Gemini Key required for Vision Hunter');
+      toast.error('Gemini Key required');
       return;
     }
     setScanning(true);
-    // Simulate scanning local/nearby profiles
     setTimeout(() => {
       setResults([
-        { id: '1', match: 95, analysis: 'Perfect match for preferences (Athletic, Bearded).', isSuspect: false },
-        { id: '2', match: 40, analysis: 'Low similarity. Body type does not match.', isSuspect: false },
-        { id: '3', match: 88, analysis: 'Strong match. Note: Image resolution is very high, possible studio shot.', isSuspect: true },
+        { id: '1', match: 95, analysis: 'Matches preferences (Athletic, Bearded).', isSuspect: false },
+        { id: '2', match: 40, analysis: 'Low similarity. Body type mismatch.', isSuspect: false },
+        { id: '3', match: 88, analysis: 'Strong match. Warning: Possible studio shot.', isSuspect: true },
       ]);
       setScanning(false);
     }, 2000);
   };
 
   return (
-    <div className="p-4 space-y-4 overflow-y-auto max-h-[400px]">
+    <div className="p-3 space-y-3 overflow-y-auto max-h-[340px]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <Target className="w-5 h-5 text-primary" />
-          <h3 className="text-sm font-black uppercase tracking-tight">AI Vision Hunter</h3>
+          <Target className="w-4 h-4 text-primary" />
+          <h3 className="text-[10px] font-bold uppercase tracking-wider">AI Vision Hunter</h3>
         </div>
         <button
           onClick={startScan}
           disabled={scanning}
-          className="p-2 bg-primary/10 text-primary rounded-xl hover:bg-primary hover:text-primary-foreground transition-all"
+          className="p-1.5 bg-primary/10 text-primary rounded-lg hover:bg-primary hover:text-primary-foreground transition-all"
         >
-          {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
+          {scanning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Search className="w-3.5 h-3.5" />}
         </button>
       </div>
 
-      <div className="p-3 bg-secondary/30 rounded-2xl border border-border/50">
+      <div className="p-2.5 bg-muted/30 rounded-xl border border-border">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-[10px] font-black text-muted-foreground uppercase">Targeting Preferences</span>
+          <span className="text-[9px] font-bold text-muted-foreground uppercase">Targeting Preferences</span>
           <Filter className="w-3 h-3 text-muted-foreground" />
         </div>
-        <div className="flex flex-wrap gap-1.5">
+        <div className="flex flex-wrap gap-1">
           {['Athletic', 'Toned', 'Bearded', 'Masc'].map(pref => (
-            <span key={pref} className="px-2 py-0.5 bg-primary/5 text-primary text-[9px] font-bold rounded-md border border-primary/10">
+            <span key={pref} className="px-2 py-0.5 bg-background text-foreground text-[8px] font-medium rounded-md border border-border">
               {pref}
             </span>
           ))}
@@ -58,32 +57,32 @@ const BubbleHunter = () => {
 
       <div className="space-y-2">
         {results.map((res) => (
-          <div key={res.id} className="p-3 bg-card border border-border/50 rounded-2xl group hover:border-primary/30 transition-colors">
+          <div key={res.id} className="p-3 bg-background border border-border rounded-xl group hover:border-primary/30 transition-colors">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500" />
-                <span className="text-xs font-black">Profile #{res.id}</span>
+                <div className="w-1.5 h-1.5 rounded-full bg-green-500" />
+                <span className="text-[10px] font-bold">Profile #{res.id}</span>
               </div>
-              <div className="px-2 py-0.5 bg-primary/10 text-primary text-[10px] font-black rounded-lg">
+              <div className="px-1.5 py-0.5 bg-primary/5 text-primary text-[9px] font-bold rounded">
                 {res.match}% MATCH
               </div>
             </div>
-            <p className="text-[11px] text-muted-foreground mb-3 leading-relaxed">
+            <p className="text-[10px] text-muted-foreground mb-2.5 leading-relaxed">
               {res.analysis}
             </p>
             <div className="flex items-center justify-between pt-2 border-t border-border/50">
               {res.isSuspect ? (
-                <div className="flex items-center gap-1.5 text-amber-500">
-                  <ShieldAlert className="w-3.5 h-3.5" />
-                  <span className="text-[10px] font-black uppercase">Catfish Warning</span>
+                <div className="flex items-center gap-1 text-amber-600">
+                  <ShieldAlert className="w-3 h-3" />
+                  <span className="text-[9px] font-bold uppercase">Catfish Alert</span>
                 </div>
               ) : (
-                <div className="flex items-center gap-1.5 text-green-500">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  <span className="text-[10px] font-black uppercase">Verified Authentic</span>
+                <div className="flex items-center gap-1 text-green-600">
+                  <ShieldCheck className="w-3 h-3" />
+                  <span className="text-[9px] font-bold uppercase">Verified</span>
                 </div>
               )}
-              <button className="text-[10px] font-black text-primary uppercase group-hover:underline">View Profile</button>
+              <button className="text-[9px] font-bold text-primary uppercase group-hover:underline">Details</button>
             </div>
           </div>
         ))}

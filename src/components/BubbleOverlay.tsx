@@ -30,19 +30,8 @@ const BubbleOverlay = () => {
   // Stealth Decoy Mode - Dynamic Icon
   const BubbleIcon = useMemo(() => {
     if (!settings.stealthMode) return MessageCircle;
-    // Swap icon based on a hypothetical battery/weather "decoy"
     return Math.random() > 0.5 ? Battery : CloudSun;
   }, [settings.stealthMode]);
-
-  // Mood Sync Glow Colors
-  const glowColor = useMemo(() => {
-    if (!settings.moodSyncEnabled) return 'shadow-primary/40';
-    // Map status to colors (Mock implementation)
-    const platform = settings.activePlatform;
-    if (platform === 'sniffies') return 'shadow-primary/60 border-primary/50';
-    if (platform === 'grindr') return 'shadow-orange-500/60 border-orange-500/50';
-    return 'shadow-green-500/60 border-green-500/50';
-  }, [settings.moodSyncEnabled, settings.activePlatform]);
 
   const handleQuickSend = (convoId: string) => {
     if (!replyText.trim()) return;
@@ -68,7 +57,6 @@ const BubbleOverlay = () => {
     const x = clientX - window.innerWidth + (settings.bubbleSize / 2);
     const y = clientY - window.innerHeight + (settings.bubbleSize / 2);
 
-    // Detect if over exit zone (bottom center)
     const exitZoneX = window.innerWidth / 2;
     const exitZoneY = window.innerHeight - 80;
     const distanceToExit = Math.sqrt(Math.pow(clientX - exitZoneX, 2) + Math.pow(clientY - exitZoneY, 2));
@@ -81,7 +69,6 @@ const BubbleOverlay = () => {
     setIsDragging(false);
     if (isOverExit) {
       setExpanded(false);
-      // In a real app, this would hide the bubble globally
     }
   };
 
@@ -102,40 +89,40 @@ const BubbleOverlay = () => {
     >
       {/* Maximized View (Mini-App) */}
       {expanded && (
-        <div className="absolute bottom-24 right-6 w-[320px] bg-card/95 backdrop-blur-xl border border-border shadow-2xl rounded-[32px] overflow-hidden pointer-events-auto animate-in zoom-in-95 fade-in duration-200 origin-bottom-right flex flex-col">
+        <div className="absolute bottom-24 right-6 w-[320px] bg-background border border-border shadow-xl rounded-2xl overflow-hidden pointer-events-auto animate-in zoom-in-95 fade-in duration-200 origin-bottom-right flex flex-col">
           {/* Header */}
-          <div className="p-4 border-b border-border bg-secondary/10">
+          <div className="p-3 border-b border-border bg-muted/30">
             <div className="flex items-center justify-between">
               <div
                 className="flex items-center gap-2 cursor-pointer group"
                 onClick={() => setShowPlatformSwitcher(!showPlatformSwitcher)}
               >
-                <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-105 transition-transform">
-                  <Globe className="w-4 h-4 text-primary-foreground" />
+                <div className="w-7 h-7 rounded-lg bg-primary flex items-center justify-center">
+                  <Globe className="w-3.5 h-3.5 text-primary-foreground" />
                 </div>
                 <div>
-                  <h2 className="text-xs font-black uppercase tracking-widest text-foreground flex items-center gap-1.5">
+                  <h2 className="text-[10px] font-bold uppercase tracking-wider text-foreground flex items-center gap-1">
                     {settings.activePlatform}
-                    <ShieldCheck className="w-3 h-3 text-primary" />
+                    <ShieldCheck className="w-2.5 h-2.5 text-primary" />
                   </h2>
-                  <p className="text-[10px] font-bold text-muted-foreground">Hax Mode Active</p>
+                  <p className="text-[9px] font-medium text-muted-foreground uppercase">Hax Engine v2.1</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setActiveTab('settings')}
-                  className={`p-2 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-primary/20 text-primary' : 'hover:bg-secondary text-muted-foreground'}`}
+                  className={`p-1.5 rounded-md transition-colors ${activeTab === 'settings' ? 'bg-primary/10 text-primary' : 'hover:bg-muted text-muted-foreground'}`}
                 >
-                  <LayoutGrid className="w-4 h-4" />
+                  <LayoutGrid className="w-3.5 h-3.5" />
                 </button>
-                <button onClick={() => setExpanded(false)} className="p-2 hover:bg-secondary rounded-xl transition-colors">
-                  <Minimize2 className="w-4 h-4 text-muted-foreground" />
+                <button onClick={() => setExpanded(false)} className="p-1.5 hover:bg-muted rounded-md transition-colors">
+                  <Minimize2 className="w-3.5 h-3.5 text-muted-foreground" />
                 </button>
               </div>
             </div>
 
             {showPlatformSwitcher && (
-              <div className="grid grid-cols-4 gap-1.5 mt-3 animate-in slide-in-from-top-2 duration-200">
+              <div className="grid grid-cols-4 gap-1 mt-3 animate-in slide-in-from-top-1 duration-150">
                 {(['sniffies', 'nkp', 'barebackrt', 'grindr'] as const).map((p) => (
                   <button
                     key={p}
@@ -143,7 +130,7 @@ const BubbleOverlay = () => {
                       updateSettings({ activePlatform: p });
                       setShowPlatformSwitcher(false);
                     }}
-                    className={`py-2 rounded-lg text-[9px] font-black uppercase transition-all border ${settings.activePlatform === p ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-muted-foreground border-border hover:border-primary/50'}`}
+                    className={`py-1.5 rounded-md text-[8px] font-bold uppercase transition-all border ${settings.activePlatform === p ? 'bg-primary text-primary-foreground border-primary' : 'bg-background text-muted-foreground border-border hover:border-primary/50'}`}
                   >
                     {p === 'barebackrt' ? 'BRT' : p}
                   </button>
@@ -153,73 +140,72 @@ const BubbleOverlay = () => {
           </div>
 
           {/* Navigation Tabs */}
-          <div className="flex p-1 bg-secondary/30 mx-4 mt-4 rounded-xl">
-            <button onClick={() => setActiveTab('chats')} className={`flex-1 flex flex-col items-center py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${activeTab === 'chats' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}>
-              <MessageCircle className="w-3.5 h-3.5 mb-0.5" />
-              Chats
-            </button>
-            <button onClick={() => setActiveTab('hunter')} className={`flex-1 flex flex-col items-center py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${activeTab === 'hunter' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}>
-              <Target className="w-3.5 h-3.5 mb-0.5" />
-              Hunter
-            </button>
-            <button onClick={() => setActiveTab('heatmap')} className={`flex-1 flex flex-col items-center py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${activeTab === 'heatmap' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}>
-              <Ghost className="w-3.5 h-3.5 mb-0.5" />
-              Ghosts
-            </button>
-            <button onClick={() => setActiveTab('radar')} className={`flex-1 flex flex-col items-center py-1.5 rounded-lg text-[9px] font-black uppercase transition-all ${activeTab === 'radar' ? 'bg-card text-primary shadow-sm' : 'text-muted-foreground'}`}>
-              <MapIcon className="w-3.5 h-3.5 mb-0.5" />
-              Radar
-            </button>
+          <div className="flex p-1 bg-muted/20 mx-3 mt-3 rounded-lg border border-border/50">
+            {[
+              { id: 'chats', icon: MessageCircle, label: 'Chats' },
+              { id: 'hunter', icon: Target, label: 'Hunter' },
+              { id: 'heatmap', icon: Ghost, label: 'Ghosts' },
+              { id: 'radar', icon: MapIcon, label: 'Radar' }
+            ].map(tab => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`flex-1 flex flex-col items-center py-1 rounded-md text-[8px] font-bold uppercase transition-all ${activeTab === tab.id ? 'bg-background text-primary border border-border/50' : 'text-muted-foreground'}`}
+              >
+                <tab.icon className="w-3 h-3 mb-0.5" />
+                {tab.label}
+              </button>
+            ))}
           </div>
 
           {/* Content Area */}
-          <div className="flex-1 max-h-[360px] overflow-y-auto custom-scrollbar">
+          <div className="flex-1 max-h-[340px] overflow-y-auto">
             {activeTab === 'chats' && (
-              <div className="divide-y divide-border/40">
+              <div className="divide-y divide-border/30">
                 {conversations.map((c) => (
-                  <div key={c.id} className="p-4 hover:bg-secondary/20 transition-colors group">
+                  <div key={c.id} className="p-3 hover:bg-muted/30 transition-colors group">
                     <div className="flex items-center gap-3">
                       <div className="relative">
-                        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-primary text-xs font-black">
+                        <div className="w-9 h-9 rounded-xl bg-muted flex items-center justify-center text-foreground text-[10px] font-bold border border-border">
                           {c.userName.slice(0, 2).toUpperCase()}
                         </div>
-                        {c.online && <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 border-2 border-card rounded-full" />}
+                        {c.online && <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 border-2 border-background rounded-full" />}
                       </div>
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center justify-between mb-0.5">
-                          <p className="text-sm font-bold text-foreground truncate">{c.userName}</p>
-                          <span className="text-[10px] font-medium text-muted-foreground">{formatTimeAgo(c.lastMessageTime)}</span>
+                          <p className="text-[11px] font-semibold text-foreground truncate">{c.userName}</p>
+                          <span className="text-[9px] font-medium text-muted-foreground">{formatTimeAgo(c.lastMessageTime)}</span>
                         </div>
-                        <p className={`text-xs truncate ${c.unreadCount > 0 ? 'text-primary font-bold' : 'text-muted-foreground'}`}>
+                        <p className={`text-[10px] truncate ${c.unreadCount > 0 ? 'text-primary font-semibold' : 'text-muted-foreground'}`}>
                           {c.lastMessage}
                         </p>
                       </div>
                     </div>
 
-                    <div className="mt-3 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="mt-2 flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => setQuickReplyId(quickReplyId === c.id ? null : c.id)}
-                        className="flex-1 py-1.5 bg-primary/10 text-primary text-[10px] font-black rounded-lg uppercase tracking-tight hover:bg-primary hover:text-primary-foreground transition-all"
+                        className="flex-1 py-1.5 bg-primary/5 text-primary text-[9px] font-bold rounded-md uppercase tracking-tight border border-primary/10 hover:bg-primary/10 transition-all"
                       >
                         Quick Reply
                       </button>
                       <button
                         onClick={() => { setExpanded(false); setActiveConversation(c.id); }}
-                        className="px-3 py-1.5 bg-secondary text-muted-foreground text-[10px] font-bold rounded-lg hover:bg-secondary/80"
+                        className="px-2 py-1.5 bg-muted text-muted-foreground text-[9px] font-bold rounded-md hover:text-foreground transition-colors"
                       >
-                        Open App
+                        Open
                       </button>
                     </div>
 
                     {quickReplyId === c.id && (
-                      <div className="mt-3 space-y-3 animate-in slide-in-from-top-2">
+                      <div className="mt-3 space-y-2.5 animate-in slide-in-from-top-1 duration-150">
                         <MediaDrawer />
-                        <div className="flex flex-wrap gap-1.5">
+                        <div className="flex flex-wrap gap-1">
                           {settings.macros.map(macro => (
                             <button
                               key={macro}
                               onClick={() => setReplyText(macro)}
-                              className="px-2 py-1 bg-secondary text-[9px] font-bold rounded-md border border-border/50 hover:border-primary transition-colors"
+                              className="px-2 py-1 bg-muted/50 text-[8px] font-bold rounded border border-border/50 hover:border-primary/50 transition-colors uppercase"
                             >
                               {macro}
                             </button>
@@ -229,21 +215,21 @@ const BubbleOverlay = () => {
                           conversationId={c.id}
                           onSelect={(text) => setReplyText(text)}
                         />
-                        <div className="flex gap-2">
+                        <div className="flex gap-1.5">
                           <Input
                             value={replyText}
                             onChange={(e) => setReplyText(e.target.value)}
                             onKeyDown={(e) => { if (e.key === 'Enter') handleQuickSend(c.id); }}
-                            placeholder="Type response..."
-                            className="flex-1 bg-secondary border-none h-9 text-xs rounded-xl"
+                            placeholder="Type reply..."
+                            className="flex-1 bg-muted/50 border-border h-8 text-[10px] rounded-lg focus-visible:ring-1 focus-visible:ring-primary"
                             autoFocus
                           />
                           <button
                             onClick={() => handleQuickSend(c.id)}
                             disabled={!replyText.trim()}
-                            className="p-2.5 bg-primary text-primary-foreground rounded-xl disabled:opacity-50"
+                            className="p-2 bg-primary text-primary-foreground rounded-lg disabled:opacity-50 transition-transform active:scale-95"
                           >
-                            <Send className="w-4 h-4" />
+                            <Send className="w-3.5 h-3.5" />
                           </button>
                         </div>
                       </div>
@@ -258,35 +244,36 @@ const BubbleOverlay = () => {
             {activeTab === 'heatmap' && <BubbleHeatmap />}
 
             {activeTab === 'settings' && (
-              <div className="p-4 space-y-4">
-                <div className="p-4 bg-primary/5 rounded-2xl border border-primary/10">
-                  <div className="flex items-center gap-3 mb-3">
-                    <Zap className="w-5 h-5 text-primary" />
-                    <span className="text-sm font-black text-foreground uppercase tracking-tight">Phase 2 Hax</span>
+              <div className="p-3 space-y-3">
+                <div className="p-3 bg-muted/30 rounded-xl border border-border">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Zap className="w-4 h-4 text-primary" />
+                    <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Engine Configuration</span>
                   </div>
-                  <div className="space-y-3">
-                    <button
-                      onClick={() => updateSettings({ stealthMode: !settings.stealthMode })}
-                      className={`w-full flex items-center justify-between p-2 rounded-lg border ${settings.stealthMode ? 'bg-primary/20 border-primary text-primary' : 'bg-card border-border text-muted-foreground'}`}
-                    >
-                      <span className="text-[10px] font-black uppercase">Stealth Decoy</span>
-                      <span className="text-[10px] font-bold">{settings.stealthMode ? 'ON' : 'OFF'}</span>
-                    </button>
-                    <button
-                      onClick={() => updateSettings({ autoPilotEnabled: !settings.autoPilotEnabled })}
-                      className={`w-full flex items-center justify-between p-2 rounded-lg border ${settings.autoPilotEnabled ? 'bg-primary/20 border-primary text-primary' : 'bg-card border-border text-muted-foreground'}`}
-                    >
-                      <span className="text-[10px] font-black uppercase">AI Auto-Pilot</span>
-                      <span className="text-[10px] font-bold">{settings.autoPilotEnabled ? 'ON' : 'OFF'}</span>
-                    </button>
+                  <div className="space-y-2">
+                    {[
+                      { label: 'Stealth Decoy', key: 'stealthMode' },
+                      { label: 'AI Auto-Pilot', key: 'autoPilotEnabled' },
+                      { label: 'Mood Sync', key: 'moodSyncEnabled' },
+                      { label: 'Auto-Greet', key: 'autoGreetEnabled' }
+                    ].map(item => (
+                      <button
+                        key={item.key}
+                        onClick={() => updateSettings({ [item.key]: !(settings as any)[item.key] })}
+                        className={`w-full flex items-center justify-between p-2 rounded-lg border text-[9px] font-bold uppercase transition-all ${(settings as any)[item.key] ? 'bg-primary/5 border-primary/20 text-primary' : 'bg-background border-border text-muted-foreground'}`}
+                      >
+                        <span>{item.label}</span>
+                        <span>{(settings as any)[item.key] ? 'Enabled' : 'Disabled'}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="p-3 bg-secondary/10 border-t border-border flex items-center justify-center">
-             <div className="w-8 h-1 bg-muted-foreground/20 rounded-full" />
+          <div className="p-2 bg-muted/30 border-t border-border flex items-center justify-center">
+             <div className="w-6 h-0.5 bg-muted-foreground/30 rounded-full" />
           </div>
         </div>
       )}
@@ -297,13 +284,12 @@ const BubbleOverlay = () => {
         onMouseDown={handleTouchStart}
         onTouchStart={handleTouchStart}
         style={bubbleStyle}
-        className={`absolute bottom-24 right-6 pointer-events-auto rounded-full flex items-center justify-center shadow-xl transition-all duration-200 group border-2 ${isDragging ? 'scale-90 cursor-grabbing' : 'animate-pulse-bubble cursor-pointer'} ${expanded ? 'scale-0 opacity-0' : 'scale-100 opacity-100'} ${isOverExit ? 'bg-destructive shadow-destructive/40 border-destructive' : `bg-primary ${glowColor}`}`}
+        className={`absolute bottom-24 right-6 pointer-events-auto rounded-full flex items-center justify-center shadow-lg transition-all duration-200 group border ${isDragging ? 'scale-95 cursor-grabbing' : 'cursor-pointer'} ${expanded ? 'scale-0 opacity-0' : 'scale-100 opacity-100'} ${isOverExit ? 'bg-destructive border-destructive text-white' : 'bg-primary border-primary/20 text-primary-foreground'}`}
       >
-        <div className={`absolute inset-0 rounded-full bg-inherit animate-ping opacity-20 ${expanded ? 'hidden' : ''}`} />
-        <BubbleIcon className={`w-6 h-6 text-primary-foreground relative z-10 transition-transform ${isDragging ? 'scale-75' : 'group-hover:scale-110'}`} />
+        <BubbleIcon className={`w-5 h-5 relative z-10 transition-transform ${isDragging ? 'scale-90' : ''}`} />
 
         {totalUnread > 0 && !isDragging && !settings.stealthMode && (
-          <span className="absolute -top-1 -right-1 min-w-5 h-5 bg-destructive text-destructive-foreground text-[10px] font-black rounded-full flex items-center justify-center px-1.5 shadow-lg animate-bounce">
+          <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-destructive text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 border-2 border-background shadow-sm">
             {totalUnread}
           </span>
         )}
@@ -311,8 +297,8 @@ const BubbleOverlay = () => {
 
       {/* Exit Zone */}
       {isDragging && (
-        <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-full border-2 flex items-center justify-center transition-all ${isOverExit ? 'scale-125 bg-destructive/20 border-destructive text-destructive' : 'bg-black/20 border-white/20 text-white/40'}`}>
-          <X className="w-8 h-8" />
+        <div className={`fixed bottom-12 left-1/2 -translate-x-1/2 w-14 h-14 rounded-full border flex items-center justify-center transition-all ${isOverExit ? 'scale-110 bg-destructive/10 border-destructive text-destructive' : 'bg-muted/20 border-border text-muted-foreground'}`}>
+          <X className="w-6 h-6" />
         </div>
       )}
     </div>

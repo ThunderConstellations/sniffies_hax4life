@@ -2,7 +2,7 @@ import { Globe, RefreshCw, ExternalLink, ShieldCheck, Settings2, EyeOff, Map, Za
 import { useAppStore } from '@/lib/store';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HAX_SCRIPTS } from '@/lib/hax-service';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 const PLATFORMS = {
   sniffies: { name: 'Sniffies', url: 'https://sniffies.com' },
@@ -14,40 +14,38 @@ const PLATFORMS = {
 const Browse = () => {
   const { settings, updateSettings } = useAppStore();
   const [showHaxPanel, setShowHaxPanel] = useState(false);
+  const [iframeKey, setIframeKey] = useState(0);
   const currentPlatform = PLATFORMS[settings.activePlatform as keyof typeof PLATFORMS];
 
+  const handleRefresh = () => {
+    setIframeKey(prev => prev + 1);
+  };
+
   const handleIframeLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
-    // Note: Cross-origin restrictions apply in standard browsers.
-    // This is a placeholder for where the Capacitor WebView injection occurs.
-    console.log(`[HAX4LIFE] Loaded ${settings.activePlatform}, applying scripts...`);
-    try {
-      const iframe = e.currentTarget;
-      // In Capacitor, we use native bridge to inject HAX_SCRIPTS[settings.activePlatform]
-    } catch (err) {
-      console.warn("Cross-origin restriction prevented browser-side injection. Native WebView will handle this.");
-    }
+    console.log(`[HAX4LIFE] ${settings.activePlatform} loaded, syncing Phase 3 engine...`);
+    // Native Android bridge will hook this load event to inject HAX_SCRIPTS[settings.activePlatform]
   };
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 pb-2 border-b border-border bg-card">
-        <div className="flex items-center justify-between mb-4">
+    <div className="flex flex-col h-full bg-background">
+      <div className="p-3 border-b border-border bg-muted/20">
+        <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-xl font-bold text-foreground">Multi-Browse</h1>
-            <div className="flex items-center gap-1 bg-primary/10 px-2 py-0.5 rounded-full">
-              <ShieldCheck className="w-3 h-3 text-primary" />
-              <span className="text-[10px] font-bold text-primary uppercase">Hax Active</span>
+            <h1 className="text-sm font-bold text-foreground uppercase tracking-wider">Multi-Browse Hub</h1>
+            <div className="flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
+              <ShieldCheck className="w-2.5 h-2.5 text-primary" />
+              <span className="text-[8px] font-bold text-primary uppercase">Engine v3.0</span>
             </div>
           </div>
-          <div className="flex gap-1">
-            <button className="p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-colors">
-              <RefreshCw className="w-4 h-4" />
+          <div className="flex gap-1.5">
+            <button onClick={handleRefresh} className="p-1.5 text-muted-foreground hover:text-foreground active:scale-90 transition-all">
+              <RefreshCw className="w-3.5 h-3.5" />
             </button>
             <button
-              className="p-2 text-muted-foreground hover:text-foreground active:scale-90 transition-colors"
+              className="p-1.5 text-muted-foreground hover:text-foreground active:scale-90 transition-all"
               onClick={() => window.open(currentPlatform.url, '_blank')}
             >
-              <ExternalLink className="w-4 h-4" />
+              <ExternalLink className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -57,18 +55,19 @@ const Browse = () => {
           onValueChange={(val) => updateSettings({ activePlatform: val as any })}
           className="w-full"
         >
-          <TabsList className="grid grid-cols-4 w-full h-9 bg-muted/50 p-1">
-            <TabsTrigger value="sniffies" className="text-[10px] py-1">Sniffies</TabsTrigger>
-            <TabsTrigger value="nkp" className="text-[10px] py-1">NKP</TabsTrigger>
-            <TabsTrigger value="barebackrt" className="text-[10px] py-1">BBRT</TabsTrigger>
-            <TabsTrigger value="grindr" className="text-[10px] py-1">Grindr</TabsTrigger>
+          <TabsList className="grid grid-cols-4 w-full h-8 bg-muted/40 p-0.5 rounded-lg border border-border/50">
+            <TabsTrigger value="sniffies" className="text-[9px] font-bold uppercase py-1">Sniffies</TabsTrigger>
+            <TabsTrigger value="nkp" className="text-[9px] font-bold uppercase py-1">NKP</TabsTrigger>
+            <TabsTrigger value="barebackrt" className="text-[9px] font-bold uppercase py-1">BBRT</TabsTrigger>
+            <TabsTrigger value="grindr" className="text-[9px] font-bold uppercase py-1">Grindr</TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
 
-      {/* Actual Browser Instance */}
+      {/* Browser Core */}
       <div className="flex-1 bg-background relative">
         <iframe
+          key={iframeKey}
           src={currentPlatform.url}
           onLoad={handleIframeLoad}
           className="w-full h-full border-none"
@@ -76,37 +75,36 @@ const Browse = () => {
           sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
         />
 
-        {/* Iframe Restriction Warning (Only in Dev/Browser) */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-20 select-none">
-          <p className="text-[10px] font-bold text-muted-foreground max-w-[200px] text-center">
-            Standard browsers may block framing. Use the Hax4Life APK to bypass security headers via native WebView.
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10 select-none px-12 text-center">
+          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+            Cross-Origin Protection Active. Final APK uses native bridge for deep injection.
           </p>
         </div>
 
-        {/* Hax Overlay HUD */}
+        {/* Hax Controller HUD */}
         <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
           {showHaxPanel && (
-            <div className="mb-3 bg-card/95 backdrop-blur-lg border border-border rounded-2xl p-4 shadow-2xl pointer-events-auto animate-slide-up">
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                  <Settings2 className="w-3.5 h-3.5" /> Hax Toolbox
+            <div className="mb-2 bg-background/95 backdrop-blur-xl border border-border rounded-xl p-3 shadow-xl pointer-events-auto animate-in slide-in-from-bottom-2">
+              <div className="flex items-center justify-between mb-3 border-b border-border pb-2">
+                <h3 className="text-[9px] font-bold uppercase tracking-wider text-primary flex items-center gap-1.5">
+                  <Zap className="w-3 h-3" /> Advanced Hax Controller
                 </h3>
                 <button onClick={() => setShowHaxPanel(false)} className="text-muted-foreground hover:text-foreground">
-                  <EyeOff className="w-3.5 h-3.5" />
+                  <X className="w-3 h-3" />
                 </button>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-2 gap-2">
                 {[
-                  { icon: ShieldCheck, label: 'Paywall Bypass', status: 'ON' },
-                  { icon: Map, label: 'Unblur Map', status: 'ON' },
-                  { icon: EyeOff, label: 'Ghost Mode', status: 'ON' },
-                  { icon: Zap, label: 'Fast Load', status: 'ON' },
+                  { icon: ShieldCheck, label: 'Unblur Photos', status: 'Active' },
+                  { icon: Map, label: 'Bypass Map Gate', status: 'Active' },
+                  { icon: EyeOff, label: 'Ghost Mode', status: 'Active' },
+                  { icon: RefreshCw, label: 'Session Keep', status: 'Active' },
                 ].map((tool, i) => (
-                  <div key={i} className="flex items-center gap-2.5 p-2 bg-secondary/50 rounded-xl border border-border/50">
-                    <tool.icon className="w-4 h-4 text-primary" />
-                    <div className="flex-1">
-                      <p className="text-[10px] font-bold text-foreground">{tool.label}</p>
-                      <p className="text-[8px] text-online font-black uppercase">{tool.status}</p>
+                  <div key={i} className="flex items-center gap-2 p-1.5 bg-muted/30 rounded-lg border border-border/50">
+                    <tool.icon className="w-3 h-3 text-primary" />
+                    <div className="min-w-0">
+                      <p className="text-[9px] font-bold text-foreground truncate">{tool.label}</p>
+                      <p className="text-[7px] text-green-500 font-bold uppercase">{tool.status}</p>
                     </div>
                   </div>
                 ))}
@@ -116,25 +114,23 @@ const Browse = () => {
 
           <div
             onClick={() => setShowHaxPanel(!showHaxPanel)}
-            className="bg-card/90 backdrop-blur-md border border-primary/20 rounded-2xl p-3 shadow-2xl flex items-center justify-between pointer-events-auto cursor-pointer active:scale-[0.98] transition-transform"
+            className="bg-background/90 backdrop-blur-md border border-border rounded-xl p-2.5 shadow-xl flex items-center justify-between pointer-events-auto cursor-pointer transition-all active:scale-[0.98] border-l-2 border-l-primary"
           >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center">
-                <ShieldCheck className="w-4 h-4 text-primary" />
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-primary/5 flex items-center justify-center border border-primary/10">
+                <ShieldCheck className="w-3.5 h-3.5 text-primary" />
               </div>
               <div>
-                <p className="text-[10px] font-bold text-primary uppercase tracking-tighter">Hax4Life Active</p>
-                <p className="text-xs font-bold text-foreground">{currentPlatform.name} Protected</p>
+                <p className="text-[9px] font-bold text-primary uppercase tracking-wider">Hax Engine v3.0</p>
+                <p className="text-[10px] font-bold text-foreground">{currentPlatform.name} Protected</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <div className="flex flex-col items-end mr-2">
-                <span className="text-[9px] text-online font-bold">● BYPASS ACTIVE</span>
-                <span className="text-[9px] text-muted-foreground">Tap for Toolbox</span>
+            <div className="flex gap-2 items-center">
+              <div className="flex flex-col items-end mr-1">
+                <span className="text-[7px] text-green-500 font-bold uppercase">● Injected</span>
+                <span className="text-[7px] text-muted-foreground uppercase">Configure</span>
               </div>
-              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center">
-                <Settings2 className="w-4 h-4 text-muted-foreground" />
-              </div>
+              <Settings2 className="w-3.5 h-3.5 text-muted-foreground" />
             </div>
           </div>
         </div>

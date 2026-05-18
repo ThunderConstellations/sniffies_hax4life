@@ -8,6 +8,7 @@ import Browse from '@/pages/Browse';
 import Settings from '@/pages/Settings';
 import Home from '@/pages/Home';
 import { useAutoPilot } from '@/lib/autopilot-service';
+import { useNotificationBridge } from '@/lib/notification-service';
 
 type Tab = 'home' | 'chats' | 'browse' | 'settings';
 
@@ -15,23 +16,17 @@ const MainApp = () => {
   const [tab, setTab] = useState<Tab>('home');
   const { activeConversation, conversations, settings } = useAppStore();
   const { processIncomingMessage } = useAutoPilot();
+  const { handlePlatformNotification } = useNotificationBridge();
 
-  // Initialize background AI services (Phase 2)
+  // Initialize background AI and Notification listeners (Phase 3)
   useEffect(() => {
-    if (!settings.autoPilotEnabled) return;
+    // Simulated Background Monitoring
+    const checkInterval = setInterval(() => {
+      // Logic for background alerts
+    }, 10000);
 
-    // Simulate monitoring for incoming messages to trigger Auto-Pilot
-    const lastMessages = conversations.map(c => ({
-      convoId: c.id,
-      lastMsg: c.messages[c.messages.length - 1]
-    }));
-
-    // Auto-Greet Logic (Phase 2)
-    if (settings.autoGreetEnabled) {
-      // Mock: auto-greet logic would go here
-    }
-
-  }, [conversations, settings.autoPilotEnabled, settings.autoGreetEnabled]);
+    return () => clearInterval(checkInterval);
+  }, [settings.autoPilotEnabled]);
 
   const tabs: { id: Tab; icon: typeof MessageCircle; label: string }[] = [
     { id: 'home', icon: HomeIcon, label: 'Home' },
@@ -40,7 +35,6 @@ const MainApp = () => {
     { id: 'settings', icon: SettingsIcon, label: 'Settings' },
   ];
 
-  // If viewing a conversation, show chat view full screen
   if (activeConversation) {
     return <ChatView />;
   }
@@ -55,21 +49,21 @@ const MainApp = () => {
         {tab === 'settings' && <Settings />}
       </div>
 
-      {/* Bubble overlay (visible on all tabs in Phase 2 for persistence) */}
+      {/* Persistent Bubble Overlay */}
       <BubbleOverlay />
 
-      {/* Bottom nav */}
-      <nav className="flex items-center border-t border-border bg-card safe-bottom">
+      {/* Professional Bottom Nav */}
+      <nav className="flex items-center border-t border-border bg-background safe-bottom">
         {tabs.map(({ id, icon: Icon, label }) => (
           <button
             key={id}
             onClick={() => setTab(id)}
-            className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors ${
-              tab === id ? 'text-primary' : 'text-muted-foreground'
+            className={`flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-all ${
+              tab === id ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
             }`}
           >
-            <Icon className="w-5 h-5" />
-            <span className="text-[10px] font-medium text-nowrap truncate w-full px-1 text-center">{label}</span>
+            <Icon className={`w-5 h-5 transition-transform ${tab === id ? 'scale-110' : ''}`} />
+            <span className="text-[10px] font-bold uppercase tracking-tight">{label}</span>
           </button>
         ))}
       </nav>

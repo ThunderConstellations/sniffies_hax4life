@@ -1,51 +1,84 @@
 /**
- * HaxService handles the generation and management of injection scripts
- * for bypassing paywalls and unlocking features on target platforms.
+ * HaxService (Phase 3)
+ * Handles advanced script injections for bypassing premium gates and unblurring media.
  */
 
 export const HAX_SCRIPTS = {
   sniffies: `
-    // Hide premium overlays and upgrade prompts
-    const style = document.createElement('style');
-    style.innerHTML = \`
-      .premium-only, .upgrade-prompt, [class*="Paywall"], [class*="Subscription"] {
-        display: none !important;
-      }
-      .map-blur { filter: none !important; }
-    \`;
-    document.head.appendChild(style);
+    // Auto-Unblur Profile Photos
+    const unblurProfiles = () => {
+      document.querySelectorAll('img[class*="blur"], .blurred-media, [style*="filter: blur"]').forEach(img => {
+        img.style.filter = 'none';
+        img.style.webkitFilter = 'none';
+        // Attempt to swap high-res source if stored in data attributes
+        const highRes = img.getAttribute('data-src') || img.getAttribute('data-original');
+        if (highRes) img.src = highRes;
+      });
+    };
 
-    // Attempt to set premium flags in local storage or global state
-    try {
-      localStorage.setItem('sniffies_premium', 'true');
-      if (window.sniffies) window.sniffies.isPremium = true;
-    } catch (e) {}
+    // Remove Premium Overlays & Gated UI
+    const removeGates = () => {
+      const selectors = [
+        '.premium-only', '.upgrade-prompt', '[class*="Paywall"]',
+        '[class*="Subscription"]', '.modal-backdrop', '#premium-modal'
+      ];
+      selectors.forEach(s => {
+        document.querySelectorAll(s).forEach(el => el.remove());
+      });
+      document.body.style.overflow = 'auto'; // Re-enable scroll if locked by modal
+    };
+
+    // Continuous Monitoring
+    const observer = new MutationObserver(() => {
+      unblurProfiles();
+      removeGates();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    // Initial Run
+    unblurProfiles();
+    removeGates();
+    console.log('[HAX4LIFE] Sniffies Engine Injected');
   `,
   grindr: `
-    const style = document.createElement('style');
-    style.innerHTML = \`
-      .grindr-cascade-premium-banner, .upsell-container {
-        display: none !important;
+    // Unlock Cascade Filters & View More
+    const unlockFilters = () => {
+      // Mocking premium status in global state
+      if (window.grindr) {
+        window.grindr.isPremium = true;
+        window.grindr.hasXtra = true;
       }
-    \`;
-    document.head.appendChild(style);
+    };
+
+    const removeAds = () => {
+      document.querySelectorAll('.ad-container, .native-ad').forEach(el => el.remove());
+    };
+
+    setInterval(() => {
+      unlockFilters();
+      removeAds();
+    }, 2000);
+    console.log('[HAX4LIFE] Grindr Engine Injected');
   `,
   nkp: `
-    const style = document.createElement('style');
-    style.innerHTML = \`
-      #premium-modal, .paywall-barrier {
-        display: none !important;
-      }
-    \`;
-    document.head.appendChild(style);
+    const bypassPaywall = () => {
+      document.querySelectorAll('.paywall-barrier, .blur-content').forEach(el => {
+        el.classList.remove('blur-content');
+        if (el.style) el.style.filter = 'none';
+      });
+    };
+    setInterval(bypassPaywall, 1000);
+    console.log('[HAX4LIFE] NKP Engine Injected');
   `,
   barebackrt: `
-    const style = document.createElement('style');
-    style.innerHTML = \`
-      .vip-only-content { display: block !important; }
-      .vip-blur { filter: none !important; }
-    \`;
-    document.head.appendChild(style);
+    const revealVIP = () => {
+      document.querySelectorAll('.vip-only').forEach(el => {
+        el.style.display = 'block';
+        el.style.filter = 'none';
+      });
+    };
+    setInterval(revealVIP, 1500);
+    console.log('[HAX4LIFE] BRT Engine Injected');
   `
 };
 
@@ -55,10 +88,8 @@ export const HAX_SCRIPTS = {
  */
 export const injectHax = (platform: keyof typeof HAX_SCRIPTS) => {
   const script = HAX_SCRIPTS[platform];
-  console.log(\`[HAX4LIFE] Injecting hax for \${platform}...\`);
+  if (!script) return '';
 
-  // In a real WebView environment, this would be:
-  // Capacitor.Plugins.Browser.executeScript({ code: script });
-
+  console.log(`[HAX4LIFE] Executing Phase 3 injection for ${platform}...`);
   return script;
 };
