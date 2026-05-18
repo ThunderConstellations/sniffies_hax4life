@@ -6,51 +6,52 @@
 
 @layer base {
   :root {
-    --background: 220 20% 7%;
-    --foreground: 210 20% 92%;
+    /* Sniffies-Inspired Professional Utility Palette */
+    --background: 240 10% 4%;
+    --foreground: 0 0% 98%;
 
-    --card: 220 18% 10%;
-    --card-foreground: 210 20% 92%;
+    --card: 240 10% 6%;
+    --card-foreground: 0 0% 98%;
 
-    --popover: 220 18% 12%;
-    --popover-foreground: 210 20% 92%;
+    --popover: 240 10% 4%;
+    --popover-foreground: 0 0% 98%;
 
-    --primary: 262 80% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 184 100% 45%; /* Sniffies Teal/Cyan */
+    --primary-foreground: 184 100% 5%;
 
-    --secondary: 220 16% 16%;
-    --secondary-foreground: 210 20% 88%;
+    --secondary: 240 5% 15%;
+    --secondary-foreground: 0 0% 98%;
 
-    --muted: 220 14% 14%;
-    --muted-foreground: 215 12% 55%;
+    --muted: 240 5% 12%;
+    --muted-foreground: 240 5% 65%;
 
-    --accent: 180 65% 45%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 184 100% 45%;
+    --accent-foreground: 0 0% 98%;
 
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 220 14% 18%;
-    --input: 220 14% 18%;
-    --ring: 262 80% 55%;
+    --border: 240 5% 15%;
+    --input: 240 5% 15%;
+    --ring: 184 100% 45%;
 
-    --radius: 1rem;
+    --radius: 0.75rem;
 
-    --bubble: 262 80% 55%;
-    --bubble-foreground: 0 0% 100%;
-    --bubble-received: 220 16% 16%;
-    --bubble-received-foreground: 210 20% 88%;
-    --online: 142 72% 45%;
-    --chat-bg: 220 20% 5%;
+    --bubble: 184 100% 45%;
+    --bubble-foreground: 184 100% 5%;
+    --bubble-received: 240 5% 15%;
+    --bubble-received-foreground: 0 0% 98%;
+    --online: 142 70% 50%;
+    --chat-bg: 240 10% 2%;
 
-    --sidebar-background: 220 18% 10%;
-    --sidebar-foreground: 210 20% 92%;
-    --sidebar-primary: 262 80% 55%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 220 16% 16%;
-    --sidebar-accent-foreground: 210 20% 88%;
-    --sidebar-border: 220 14% 18%;
-    --sidebar-ring: 262 80% 55%;
+    --sidebar-background: 240 10% 6%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 184 100% 45%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 5% 15%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 240 5% 15%;
+    --sidebar-ring: 184 100% 45%;
   }
 }
 
@@ -65,6 +66,7 @@
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     overscroll-behavior: none;
+    letter-spacing: -0.01em;
   }
 }
 

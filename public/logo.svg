@@ -1,7 +1,9 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" rx="128" fill="#8B5CF6"/>
-  <path d="M256 120C180.89 120 120 180.89 120 256C120 331.11 180.89 392 256 392C331.11 392 392 331.11 392 256C392 180.89 331.11 120 256 120ZM256 360C198.56 360 152 313.44 152 256C152 198.56 198.56 152 256 152C313.44 152 360 198.56 360 256C360 313.44 313.44 360 256 360Z" fill="white"/>
-  <path d="M256 184C216.24 184 184 216.24 184 256C184 295.76 216.24 328 256 328C295.76 328 328 295.76 328 256C328 216.24 295.76 184 256 184ZM256 304C229.49 304 208 282.51 208 256C208 229.49 229.49 208 256 208C282.51 208 304 229.49 304 256C304 282.51 282.51 304 256 304Z" fill="white" fill-opacity="0.5"/>
-  <path d="M256 232C242.75 232 232 242.75 232 256C232 269.25 242.75 280 256 280C269.25 280 280 269.25 280 256C280 242.75 269.25 232 256 232Z" fill="white"/>
-  <path d="M360 152L400 112M152 152L112 112M360 360L400 400M152 360L112 400" stroke="white" stroke-width="24" stroke-linecap="round"/>
+  <rect width="512" height="512" rx="128" fill="#00BCD4"/>
+  <!-- Hax Engine Gear/Target Motif -->
+  <circle cx="256" cy="256" r="140" stroke="white" stroke-width="24" stroke-dasharray="20 40"/>
+  <circle cx="256" cy="256" r="80" fill="white"/>
+  <path d="M256 100V140M256 372V412M100 256H140M372 256H412" stroke="white" stroke-width="24" stroke-linecap="round"/>
+  <!-- Stealth Motif -->
+  <path d="M400 112L340 172M112 112L172 172" stroke="white" stroke-width="24" stroke-linecap="round" opacity="0.6"/>
 </svg>

@@ -1,5 +1,5 @@
 import { useAppStore, type Conversation } from '@/lib/store';
-import { Pin, Star, Search, BellOff, Archive, Trash2, MoreHorizontal } from 'lucide-react';
+import { Pin, Star, Search, BellOff, Archive, Trash2, MoreHorizontal, User } from 'lucide-react';
 import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { formatTimeAgo } from '@/lib/utils';
@@ -10,91 +10,54 @@ const ConversationItem = ({ convo, onSelect }: { convo: Conversation; onSelect: 
   const initials = convo.userName.slice(0, 2).toUpperCase();
 
   return (
-    <div className="relative">
+    <div className="relative group px-1">
       <button
         onClick={onSelect}
         onContextMenu={(e) => { e.preventDefault(); setShowActions(!showActions); }}
-        className="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-secondary/60 transition-colors active:scale-[0.98] text-left"
+        className="flex items-center gap-3 w-full p-2.5 rounded-xl hover:bg-muted/40 transition-all active:scale-[0.99] text-left border border-transparent hover:border-border/50"
       >
         <div className="relative shrink-0">
-          <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-sm">
-            {initials}
+          <div className="w-11 h-11 rounded-full bg-muted flex items-center justify-center text-muted-foreground border border-border">
+            <User className="w-5 h-5 opacity-40" />
           </div>
           {convo.online && (
-            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-online rounded-full border-2 border-background" />
+            <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-background" />
           )}
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-1.5">
-            <span className="font-semibold text-foreground truncate text-sm">{convo.userName}</span>
-            {convo.pinned && <Pin className="w-3 h-3 text-primary shrink-0" />}
-            {convo.starred && <Star className="w-3 h-3 text-yellow-400 fill-yellow-400 shrink-0" />}
-            {convo.muted && <BellOff className="w-3 h-3 text-muted-foreground shrink-0" />}
+          <div className="flex items-center gap-1.5 mb-0.5">
+            <span className="font-bold text-foreground truncate text-[13px] uppercase tracking-tight">{convo.userName}</span>
+            {convo.pinned && <Pin className="w-2.5 h-2.5 text-primary fill-current shrink-0" />}
             {convo.distance && (
-              <span className="text-[10px] text-muted-foreground ml-auto shrink-0">{convo.distance}</span>
+              <span className="text-[9px] font-black text-primary ml-auto shrink-0 uppercase">{convo.distance}</span>
             )}
           </div>
-          <p className="text-xs text-muted-foreground truncate">{convo.lastMessage}</p>
+          <p className={`text-[11px] truncate ${convo.unreadCount > 0 ? 'text-foreground font-bold' : 'text-muted-foreground'}`}>
+            {convo.lastMessage}
+          </p>
         </div>
 
-        <div className="flex flex-col items-end gap-1 shrink-0">
-          <span className="text-[10px] text-muted-foreground">{formatTimeAgo(convo.lastMessageTime)}</span>
+        <div className="flex flex-col items-end gap-1.5 shrink-0 ml-1">
+          <span className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">{formatTimeAgo(convo.lastMessageTime)}</span>
           {convo.unreadCount > 0 && (
-            <span className="min-w-5 h-5 bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center px-1">
+            <span className="min-w-[16px] h-[16px] bg-primary text-primary-foreground text-[9px] font-black rounded flex items-center justify-center px-1 shadow-sm">
               {convo.unreadCount}
             </span>
           )}
         </div>
-
-        <button
-          onClick={(e) => { e.stopPropagation(); setShowActions(!showActions); }}
-          className="p-1 text-muted-foreground shrink-0"
-        >
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
       </button>
 
-      {/* Quick actions popup */}
       {showActions && (
-        <div className="absolute right-12 top-2 bg-popover border border-border rounded-lg shadow-xl py-1 z-50 min-w-[140px] animate-scale-in">
-          <button
-            onClick={() => { togglePin(convo.id); setShowActions(false); }}
-            className="flex items-center gap-2 px-3 py-2 w-full text-xs text-foreground hover:bg-secondary"
-          >
-            <Pin className="w-3.5 h-3.5" /> {convo.pinned ? 'Unpin' : 'Pin'}
+        <div className="absolute right-4 top-2 bg-background border border-border rounded-lg shadow-2xl py-1 z-50 min-w-[140px] animate-in fade-in zoom-in-95">
+          <button onClick={() => { togglePin(convo.id); setShowActions(false); }} className="flex items-center gap-2 px-3 py-1.5 w-full text-[10px] font-bold uppercase hover:bg-muted">
+            <Pin className="w-3 h-3" /> {convo.pinned ? 'Unpin' : 'Pin'}
           </button>
-          <button
-            onClick={() => { toggleStar(convo.id); setShowActions(false); }}
-            className="flex items-center gap-2 px-3 py-2 w-full text-xs text-foreground hover:bg-secondary"
-          >
-            <Star className="w-3.5 h-3.5" /> {convo.starred ? 'Unstar' : 'Star'}
+          <button onClick={() => { toggleStar(convo.id); setShowActions(false); }} className="flex items-center gap-2 px-3 py-1.5 w-full text-[10px] font-bold uppercase hover:bg-muted">
+            <Star className="w-3 h-3" /> {convo.starred ? 'Unstar' : 'Star'}
           </button>
-          <button
-            onClick={() => { toggleMute(convo.id); setShowActions(false); }}
-            className="flex items-center gap-2 px-3 py-2 w-full text-xs text-foreground hover:bg-secondary"
-          >
-            <BellOff className="w-3.5 h-3.5" /> {convo.muted ? 'Unmute' : 'Mute'}
-          </button>
-          {convo.unreadCount > 0 && (
-            <button
-              onClick={() => { markAsRead(convo.id); setShowActions(false); }}
-              className="flex items-center gap-2 px-3 py-2 w-full text-xs text-foreground hover:bg-secondary"
-            >
-              ✓ Mark Read
-            </button>
-          )}
-          <button
-            onClick={() => { toggleArchive(convo.id); setShowActions(false); }}
-            className="flex items-center gap-2 px-3 py-2 w-full text-xs text-foreground hover:bg-secondary"
-          >
-            <Archive className="w-3.5 h-3.5" /> {convo.archived ? 'Unarchive' : 'Archive'}
-          </button>
-          <button
-            onClick={() => { if (confirm(`Delete chat with ${convo.userName}?`)) deleteConversation(convo.id); setShowActions(false); }}
-            className="flex items-center gap-2 px-3 py-2 w-full text-xs text-destructive hover:bg-secondary"
-          >
-            <Trash2 className="w-3.5 h-3.5" /> Delete
+          <button onClick={() => { if (confirm(`Delete chat with ${convo.userName}?`)) deleteConversation(convo.id); setShowActions(false); }} className="flex items-center gap-2 px-3 py-1.5 w-full text-[10px] font-bold uppercase text-destructive hover:bg-muted">
+            <Trash2 className="w-3 h-3" /> Delete
           </button>
         </div>
       )}
@@ -113,7 +76,7 @@ const ConversationList = () => {
     .filter((c) => {
       if (!c.userName.toLowerCase().includes(search.toLowerCase())) return false;
       switch (filterTab) {
-        case 'unread': return c.unreadCount > 0;
+        case 'unread': return (c.unreadCount || 0) > 0;
         case 'starred': return c.starred;
         case 'archived': return c.archived;
         default: return !c.archived;
@@ -124,86 +87,65 @@ const ConversationList = () => {
       return b.lastMessageTime - a.lastMessageTime;
     });
 
-  const totalUnread = conversations.reduce((sum, c) => sum + c.unreadCount, 0);
+  const totalUnread = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
   const tabs: { id: FilterTab; label: string; count?: number }[] = [
     { id: 'all', label: 'All' },
-    { id: 'unread', label: 'Unread', count: totalUnread },
-    { id: 'starred', label: '⭐' },
-    { id: 'archived', label: '📦' },
+    { id: 'unread', label: 'New', count: totalUnread },
+    { id: 'starred', label: 'Favs' },
   ];
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="p-4 pb-2">
-        <div className="flex items-center justify-between mb-3">
-          <h1 className="text-xl font-bold text-foreground">Chats</h1>
+    <div className="flex flex-col h-full bg-background">
+      <div className="p-4 pb-2 border-b border-border/50 bg-muted/10">
+        <div className="flex items-center justify-between mb-4">
+          <h1 className="text-sm font-black text-foreground uppercase tracking-widest">Inbox</h1>
           {totalUnread > 0 && (
-            <span className="bg-primary text-primary-foreground text-xs font-bold rounded-full px-2 py-0.5">
-              {totalUnread}
+            <span className="bg-primary text-primary-foreground text-[10px] font-black rounded px-1.5 py-0.5">
+              {totalUnread} NEW
             </span>
           )}
         </div>
-        <div className="relative mb-3">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Search conversations..."
+
+        <div className="relative mb-4">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />
+          <input
+            placeholder="FILTER CONTACTS..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-9 bg-secondary border-none h-9 text-sm rounded-xl"
+            className="w-full pl-9 pr-4 py-2 bg-muted/40 border border-border/50 rounded-lg text-[10px] font-bold uppercase tracking-wider focus:outline-none focus:border-primary/50 transition-colors"
           />
         </div>
 
-        {/* Filter tabs */}
-        <div className="flex gap-1.5">
+        <div className="flex gap-2 mb-2">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setFilterTab(tab.id)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+              className={`px-3 py-1 rounded-md text-[9px] font-black uppercase tracking-wider transition-all ${
                 filterTab === tab.id
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-secondary text-muted-foreground'
+                  ? 'bg-primary text-primary-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {tab.label}
-              {tab.count ? ` (${tab.count})` : ''}
+              {tab.label} {tab.count ? `(${tab.count})` : ''}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Online now */}
-      {filterTab === 'all' && (
-        <div className="px-4 py-2">
-          <div className="flex gap-3 overflow-x-auto pb-1">
-            {conversations.filter(c => c.online && !c.archived).map((c) => (
-              <button
-                key={c.id}
-                onClick={() => setActiveConversation(c.id)}
-                className="flex flex-col items-center gap-1 shrink-0"
-              >
-                <div className="relative">
-                  <div className="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center text-primary font-semibold text-xs border-2 border-primary/40">
-                    {c.userName.slice(0, 2).toUpperCase()}
-                  </div>
-                  <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-online rounded-full border-2 border-background" />
-                </div>
-                <span className="text-[10px] text-muted-foreground">{c.userName}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* List */}
-      <div className="flex-1 overflow-y-auto px-2">
+      <div className="flex-1 overflow-y-auto pt-2 space-y-0.5">
         {filtered.map((c) => (
           <ConversationItem key={c.id} convo={c} onSelect={() => setActiveConversation(c.id)} />
         ))}
         {filtered.length === 0 && (
-          <p className="text-center text-muted-foreground text-sm py-8">
-            {filterTab === 'archived' ? 'No archived chats' : filterTab === 'unread' ? 'All caught up! 🎉' : 'No conversations found'}
-          </p>
+          <div className="flex flex-col items-center justify-center py-12 px-6 text-center">
+             <div className="w-12 h-12 rounded-full bg-muted/30 flex items-center justify-center mb-3">
+                <Search className="w-6 h-6 text-muted-foreground/20" />
+             </div>
+             <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
+               No Transmissions Found
+             </p>
+          </div>
         )}
       </div>
     </div>
