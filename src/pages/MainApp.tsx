@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { MessageCircle, Globe, Settings as SettingsIcon, Home as HomeIcon } from 'lucide-react';
 import ConversationList from '@/components/ConversationList';
@@ -7,12 +7,31 @@ import BubbleOverlay from '@/components/BubbleOverlay';
 import Browse from '@/pages/Browse';
 import Settings from '@/pages/Settings';
 import Home from '@/pages/Home';
+import { useAutoPilot } from '@/lib/autopilot-service';
 
 type Tab = 'home' | 'chats' | 'browse' | 'settings';
 
 const MainApp = () => {
   const [tab, setTab] = useState<Tab>('home');
-  const { activeConversation } = useAppStore();
+  const { activeConversation, conversations, settings } = useAppStore();
+  const { processIncomingMessage } = useAutoPilot();
+
+  // Initialize background AI services (Phase 2)
+  useEffect(() => {
+    if (!settings.autoPilotEnabled) return;
+
+    // Simulate monitoring for incoming messages to trigger Auto-Pilot
+    const lastMessages = conversations.map(c => ({
+      convoId: c.id,
+      lastMsg: c.messages[c.messages.length - 1]
+    }));
+
+    // Auto-Greet Logic (Phase 2)
+    if (settings.autoGreetEnabled) {
+      // Mock: auto-greet logic would go here
+    }
+
+  }, [conversations, settings.autoPilotEnabled, settings.autoGreetEnabled]);
 
   const tabs: { id: Tab; icon: typeof MessageCircle; label: string }[] = [
     { id: 'home', icon: HomeIcon, label: 'Home' },
@@ -36,8 +55,8 @@ const MainApp = () => {
         {tab === 'settings' && <Settings />}
       </div>
 
-      {/* Bubble overlay (only on chats/home tab) */}
-      {(tab === 'chats' || tab === 'home') && <BubbleOverlay />}
+      {/* Bubble overlay (visible on all tabs in Phase 2 for persistence) */}
+      <BubbleOverlay />
 
       {/* Bottom nav */}
       <nav className="flex items-center border-t border-border bg-card safe-bottom">
@@ -50,7 +69,7 @@ const MainApp = () => {
             }`}
           >
             <Icon className="w-5 h-5" />
-            <span className="text-[10px] font-medium">{label}</span>
+            <span className="text-[10px] font-medium text-nowrap truncate w-full px-1 text-center">{label}</span>
           </button>
         ))}
       </nav>
