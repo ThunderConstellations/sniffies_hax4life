@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
 import { generateChatResponse } from '@/lib/ai-service';
 import { toast } from 'sonner';
@@ -59,6 +60,3 @@ export const useAutoPilot = () => {
 
   return { processAutoGreet };
 };
-
-// Hook-like wrapper for the background worker
-import { useEffect } from 'react';
