@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAppStore } from '@/lib/store';
-import { MessageCircle, Globe, Settings as SettingsIcon, Home as HomeIcon, Map as MapIcon } from 'lucide-react';
+import { MessageCircle, Globe, Settings as SettingsIcon, Home as HomeIcon, Map as MapIcon, User } from 'lucide-react';
 import ConversationList from '@/components/ConversationList';
 import ChatView from '@/components/ChatView';
 import BubbleOverlay from '@/components/BubbleOverlay';
@@ -9,8 +9,9 @@ import Settings from '@/pages/Settings';
 import Home from '@/pages/Home';
 import { useAutoPilot } from '@/lib/autopilot-service';
 import { useNotificationBridge } from '@/lib/notification-service';
+import ProfileViewer from '@/components/ProfileViewer';
 
-type Tab = 'home' | 'chats' | 'browse' | 'settings';
+type Tab = 'home' | 'chats' | 'browse' | 'settings' | 'profile';
 
 const MainApp = () => {
   const [tab, setTab] = useState<Tab>('home');
@@ -33,6 +34,8 @@ const MainApp = () => {
   ];
 
   if (activeConversation) {
+    const convo = conversations.find(c => c.id === activeConversation);
+    if (convo) return <ProfileViewer convo={convo} onClose={() => {}} />;
     return <ChatView />;
   }
 

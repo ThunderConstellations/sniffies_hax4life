@@ -1,19 +1,22 @@
 import React from 'react';
+import { useAppStore } from '@/lib/store';
 import { Image as ImageIcon, Plus, Lock } from 'lucide-react';
 
 const MediaDrawer = () => {
-  const media = [
-    { id: '1', url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200', premium: false },
-    { id: '2', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200', premium: false },
-    { id: '3', url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200', premium: true },
-    { id: '4', url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200', premium: false },
+  const { photoVault } = useAppStore();
+
+  const defaultMedia = [
+    { id: 'd1', url: 'https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=200', premium: false },
+    { id: 'd2', url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200', premium: false },
   ];
+
+  const allMedia = [...photoVault, ...defaultMedia];
 
   return (
     <div className="py-2 border-y border-border">
       <div className="flex items-center justify-between px-3 mb-2">
         <span className="text-[9px] font-bold text-muted-foreground uppercase tracking-wider">Quick-Media</span>
-        <button className="text-[8px] font-bold text-primary uppercase hover:underline">Gallery</button>
+        <button className="text-[8px] font-bold text-primary uppercase hover:underline">Vault</button>
       </div>
 
       <div className="flex gap-2 overflow-x-auto px-3 no-scrollbar pb-0.5">
@@ -22,14 +25,14 @@ const MediaDrawer = () => {
           <span className="text-[7px] font-bold text-muted-foreground uppercase">Add</span>
         </button>
 
-        {media.map((item) => (
+        {allMedia.map((item) => (
           <div key={item.id} className="relative flex-shrink-0 w-14 h-14 group cursor-pointer">
             <img
               src={item.url}
               alt="Media"
               className="w-full h-full object-cover rounded-xl border border-border group-hover:border-primary transition-colors"
             />
-            {item.premium && (
+            {('category' in item && item.category === 'private') && (
               <div className="absolute inset-0 bg-background/60 rounded-xl flex items-center justify-center">
                 <Lock className="w-3 h-3 text-muted-foreground fill-current" />
               </div>

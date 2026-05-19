@@ -1,9 +1,10 @@
 import { useAppStore } from './store';
-import { generateChatResponse } from './ai-service';
+import { generateChatResponse, detectPlanIntent } from './ai-service';
+import { toast } from 'sonner';
 
 /**
- * AI Auto-Pilot Service
- * Handles automated conversation management by mimicking user patterns.
+ * AI Auto-Pilot Service (Phase 5)
+ * Handles automated replies with mimicry and Plan Guard protection.
  */
 export const useAutoPilot = () => {
   const { conversations, settings, sendMessage } = useAppStore();
@@ -14,13 +15,23 @@ export const useAutoPilot = () => {
     const conversation = conversations.find(c => c.id === conversationId);
     if (!conversation) return;
 
-    // Mimicry logic: analyze user's previous messages for slang/brevity
+    // Plan Guard (Phase 5)
+    if (settings.planGuardEnabled && detectPlanIntent(messageText)) {
+      // Play special notification sound (mock)
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+      audio.play().catch(() => {});
+
+      toast.warning(`Plan Alert: ${conversation.userName}`, {
+        description: "AI detected a potential plan being made. Review before confirming.",
+        duration: 5000,
+      });
+    }
+
     const userMessages = conversation.messages.filter(m => m.senderId === 'me');
     const systemPrompt = `
-      You are an AI Auto-Pilot for a chat app.
-      Your goal is to reply to the following message while mimicking the user's voice.
-      User's typical style: ${userMessages.slice(-5).map(m => m.text).join(', ')}
-      Keep it brief, use similar slang, and match their punctuation style.
+      You are an AI Auto-Pilot for Sniffies Hax.
+      Mimic the user's voice: ${userMessages.slice(-5).map(m => m.text).join(', ')}
+      Sniffies style: Brutally honest, direct, minimal punctuation, lowercase.
     `;
 
     try {
@@ -30,7 +41,6 @@ export const useAutoPilot = () => {
       ], settings);
 
       if (response && !response.includes('Please set API keys')) {
-        // Random delay to simulate human typing (2-5 seconds)
         const delay = Math.floor(Math.random() * 3000) + 2000;
         setTimeout(() => {
           sendMessage(conversationId, response);

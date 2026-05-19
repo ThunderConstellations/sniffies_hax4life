@@ -67,10 +67,19 @@ export const generateChatResponse = async (messages: { role: string; content: st
 };
 
 /**
+ * AI Plan Detector (Phase 5)
+ * Analyzes text for plan-making intent.
+ */
+export const detectPlanIntent = (text: string): boolean => {
+  const keywords = ['meet', 'where', 'when', 'time', 'location', 'place', 'come over', 'host', 'address', 'parking', 'plans'];
+  const lower = text.toLowerCase();
+  return keywords.some(k => lower.includes(k));
+};
+
+/**
  * AI Vision Hunter / Catfish Guard
- * Scans profile images for specific physical traits or signs of manipulation.
  */
 export const scanProfileVision = async (imageBase64: string, prompt: string, settings: any): Promise<AIResponse> => {
-  if (!settings.geminiKey) return { text: '', error: 'Gemini 1.5 Flash required for Vision features' };
+  if (!settings.geminiKey) return { text: '', error: 'Gemini 1.5 Flash required' };
   return await callGemini(prompt, settings.geminiKey, imageBase64);
 };

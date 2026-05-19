@@ -1,8 +1,9 @@
-import { Globe, RefreshCw, ExternalLink, ShieldCheck, Settings2, EyeOff, Map, Zap } from 'lucide-react';
+import { Globe, RefreshCw, ExternalLink, ShieldCheck, Settings2, EyeOff, Map, Zap, Layers, Navigation } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HAX_SCRIPTS } from '@/lib/hax-service';
 import { useState, useEffect } from 'react';
+import SniffiesMap from '@/components/SniffiesMap';
 
 const PLATFORMS = {
   sniffies: { name: 'Sniffies', url: 'https://sniffies.com' },
@@ -15,6 +16,7 @@ const Browse = () => {
   const { settings, updateSettings } = useAppStore();
   const [showHaxPanel, setShowHaxPanel] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
+  const [showNativeMap, setShowNativeMap] = useState(false);
   const currentPlatform = PLATFORMS[settings.activePlatform as keyof typeof PLATFORMS];
 
   const handleRefresh = () => {
@@ -22,8 +24,7 @@ const Browse = () => {
   };
 
   const handleIframeLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
-    console.log(`[HAX4LIFE] ${settings.activePlatform} loaded, syncing Phase 3 engine...`);
-    // Native Android bridge will hook this load event to inject HAX_SCRIPTS[settings.activePlatform]
+    console.log(`[HAX4LIFE] ${settings.activePlatform} loaded, syncing Phase 5 engine...`);
   };
 
   return (
@@ -34,18 +35,18 @@ const Browse = () => {
             <h1 className="text-sm font-bold text-foreground uppercase tracking-wider">Multi-Browse Hub</h1>
             <div className="flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
               <ShieldCheck className="w-2.5 h-2.5 text-primary" />
-              <span className="text-[8px] font-bold text-primary uppercase">Engine v3.0</span>
+              <span className="text-[8px] font-bold text-primary uppercase">Engine v5.0</span>
             </div>
           </div>
           <div className="flex gap-1.5">
+            <button
+               onClick={() => setShowNativeMap(!showNativeMap)}
+               className={`p-1.5 rounded-lg border transition-all ${showNativeMap ? 'bg-primary/20 border-primary text-primary' : 'bg-muted/50 border-border text-muted-foreground'}`}
+            >
+               <Map className="w-3.5 h-3.5" />
+            </button>
             <button onClick={handleRefresh} className="p-1.5 text-muted-foreground hover:text-foreground active:scale-90 transition-all">
               <RefreshCw className="w-3.5 h-3.5" />
-            </button>
-            <button
-              className="p-1.5 text-muted-foreground hover:text-foreground active:scale-90 transition-all"
-              onClick={() => window.open(currentPlatform.url, '_blank')}
-            >
-              <ExternalLink className="w-3.5 h-3.5" />
             </button>
           </div>
         </div>
@@ -66,20 +67,18 @@ const Browse = () => {
 
       {/* Browser Core */}
       <div className="flex-1 bg-background relative">
-        <iframe
-          key={iframeKey}
-          src={currentPlatform.url}
-          onLoad={handleIframeLoad}
-          className="w-full h-full border-none"
-          title={currentPlatform.name}
-          sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
-        />
-
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-10 select-none px-12 text-center">
-          <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
-            Cross-Origin Protection Active. Final APK uses native bridge for deep injection.
-          </p>
-        </div>
+        {showNativeMap && settings.activePlatform === 'sniffies' ? (
+           <SniffiesMap />
+        ) : (
+           <iframe
+             key={iframeKey}
+             src={currentPlatform.url}
+             onLoad={handleIframeLoad}
+             className="w-full h-full border-none"
+             title={currentPlatform.name}
+             sandbox="allow-forms allow-modals allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+           />
+        )}
 
         {/* Hax Controller HUD */}
         <div className="absolute bottom-4 left-4 right-4 pointer-events-none">
@@ -121,7 +120,7 @@ const Browse = () => {
                 <ShieldCheck className="w-3.5 h-3.5 text-primary" />
               </div>
               <div>
-                <p className="text-[9px] font-bold text-primary uppercase tracking-wider">Hax Engine v3.0</p>
+                <p className="text-[9px] font-bold text-primary uppercase tracking-wider">Hax Engine v5.0</p>
                 <p className="text-[10px] font-bold text-foreground">{currentPlatform.name} Protected</p>
               </div>
             </div>

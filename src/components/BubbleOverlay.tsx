@@ -13,6 +13,7 @@ import BubbleAIHelper from './BubbleAIHelper';
 import BubbleHunter from './BubbleHunter';
 import BubbleHeatmap from './BubbleHeatmap';
 import MediaDrawer from './MediaDrawer';
+import SniffiesLogo from './SniffiesLogo';
 
 const BubbleOverlay = () => {
   const { conversations, settings, sendMessage, setActiveConversation, updateSettings } = useAppStore();
@@ -26,11 +27,6 @@ const BubbleOverlay = () => {
   const [replyText, setReplyText] = useState('');
 
   const totalUnread = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
-
-  const BubbleIcon = useMemo(() => {
-    if (!settings.stealthMode) return Search;
-    return Math.random() > 0.5 ? Battery : CloudSun;
-  }, [settings.stealthMode]);
 
   const handleQuickSend = (convoId: string) => {
     if (!replyText.trim()) return;
@@ -88,7 +84,7 @@ const BubbleOverlay = () => {
     >
       {/* Maximized View */}
       {expanded && (
-        <div className="absolute bottom-24 right-6 w-[320px] bg-background border border-border shadow-2xl rounded-2xl overflow-hidden pointer-events-auto animate-in zoom-in-95 fade-in duration-200 origin-bottom-right flex flex-col">
+        <div className="absolute bottom-24 right-6 w-[320px] bg-background border border-border shadow-2xl rounded-2xl overflow-hidden pointer-events-auto animate-in zoom-in-95 fade-in duration-300 origin-bottom-right flex flex-col">
           {/* Header */}
           <div className="p-3 border-b border-border bg-muted/10">
             <div className="flex items-center justify-between">
@@ -97,14 +93,14 @@ const BubbleOverlay = () => {
                 onClick={() => setShowPlatformSwitcher(!showPlatformSwitcher)}
               >
                 <div className="w-8 h-8 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                  <Search className="w-4 h-4 text-primary-foreground" />
+                  <SniffiesLogo className="w-5 h-5 text-primary-foreground" />
                 </div>
                 <div>
                   <h2 className="text-[10px] font-black uppercase tracking-widest text-foreground flex items-center gap-1">
                     {settings.activePlatform}
                     <ShieldCheck className="w-2.5 h-2.5 text-primary" />
                   </h2>
-                  <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Hax Hub v4.0</p>
+                  <p className="text-[8px] font-bold text-muted-foreground uppercase tracking-tighter">Hax Engine v5.1</p>
                 </div>
               </div>
               <div className="flex items-center gap-1">
@@ -158,7 +154,7 @@ const BubbleOverlay = () => {
           </div>
 
           {/* Content */}
-          <div className="flex-1 max-h-[340px] overflow-y-auto">
+          <div className="flex-1 max-h-[340px] overflow-y-auto custom-scrollbar">
             {activeTab === 'chats' && (
               <div className="divide-y divide-border/30">
                 {conversations.map((c) => (
@@ -254,7 +250,8 @@ const BubbleOverlay = () => {
                       { label: 'Stealth Decoy', key: 'stealthMode' },
                       { label: 'AI Auto-Pilot', key: 'autoPilotEnabled' },
                       { label: 'Mood Sync', key: 'moodSyncEnabled' },
-                      { label: 'Auto-Greet', key: 'autoGreetEnabled' }
+                      { label: 'Auto-Greet', key: 'autoGreetEnabled' },
+                      { label: 'Plan Guard', key: 'planGuardEnabled' }
                     ].map(item => (
                       <button
                         key={item.key}
@@ -283,12 +280,18 @@ const BubbleOverlay = () => {
         onMouseDown={handleTouchStart}
         onTouchStart={handleTouchStart}
         style={bubbleStyle}
-        className={`absolute bottom-24 right-6 pointer-events-auto rounded-full flex items-center justify-center shadow-2xl transition-all duration-200 group border ${isDragging ? 'scale-95 cursor-grabbing' : 'cursor-pointer'} ${expanded ? 'scale-0 opacity-0' : 'scale-100 opacity-100'} ${isOverExit ? 'bg-destructive border-destructive text-white' : 'bg-primary border-primary/30 shadow-primary/20 text-primary-foreground'}`}
+        className={`absolute bottom-24 right-6 pointer-events-auto rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 group border ${isDragging ? 'scale-95 cursor-grabbing' : 'cursor-pointer'} ${expanded ? 'scale-0 opacity-0' : 'scale-100 opacity-100'} ${isOverExit ? 'bg-destructive border-destructive text-white' : 'bg-background border-primary/30 shadow-primary/20 text-primary'}`}
       >
-        <BubbleIcon className={`w-5 h-5 relative z-10 transition-transform ${isDragging ? 'scale-90' : 'group-hover:scale-110'}`} />
+        <div className="relative z-10 w-8 h-8 flex items-center justify-center">
+           {settings.stealthMode ? (
+              Math.random() > 0.5 ? <Battery className="w-5 h-5" /> : <CloudSun className="w-5 h-5" />
+           ) : (
+              <SniffiesLogo className="w-6 h-6" />
+           )}
+        </div>
 
         {totalUnread > 0 && !isDragging && !settings.stealthMode && (
-          <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] bg-destructive text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-background shadow-lg">
+          <span className="absolute -top-1.5 -right-1.5 min-w-[20px] h-[20px] bg-destructive text-white text-[10px] font-black rounded-full flex items-center justify-center px-1 border-2 border-background shadow-lg animate-in zoom-in">
             {totalUnread}
           </span>
         )}
