@@ -13,6 +13,16 @@ export interface Message {
   deleted?: boolean;
 }
 
+export interface ProfileStats {
+  age?: number;
+  height?: string;
+  weight?: string;
+  bodyType?: string;
+  ethnicity?: string;
+  position?: 'Top' | 'Bottom' | 'Vers' | 'Side' | 'Strict Top' | 'Strict Bottom';
+  lookingFor?: string[];
+}
+
 export interface Conversation {
   id: string;
   userName: string;
@@ -21,6 +31,7 @@ export interface Conversation {
   lastMessageTime: number;
   unreadCount: number;
   online: boolean;
+  lastSeen?: string;
   pinned: boolean;
   starred: boolean;
   messages: Message[];
@@ -29,6 +40,7 @@ export interface Conversation {
   muted?: boolean;
   notificationSound?: string;
   archived?: boolean;
+  stats?: ProfileStats;
 }
 
 export interface AppSettings {
@@ -58,12 +70,28 @@ export interface AppSettings {
   activePlatform: 'sniffies' | 'nkp' | 'barebackrt' | 'grindr';
   stayOnlineBackground: boolean;
   nativeBubblesEnabled: boolean;
+  autoPilotEnabled: boolean;
+  autoGreetEnabled: boolean;
+  stealthMode: boolean;
+  moodSyncEnabled: boolean;
+  catfishGuardEnabled: boolean;
+  visionHunterEnabled: boolean;
+  hunterPreferences: {
+    minAge: number;
+    maxAge: number;
+    bodyType: string[];
+    ethnicity: string[];
+  };
+  macros: string[];
+  planGuardEnabled: boolean;
 }
 
 interface AppState {
   unlocked: boolean;
   activeConversation: string | null;
   conversations: Conversation[];
+  savedProfiles: string[]; // List of conversation IDs or profile IDs
+  photoVault: { id: string; url: string; category: string; timestamp: number }[];
   settings: AppSettings;
   setUnlocked: (val: boolean) => void;
   setActiveConversation: (id: string | null) => void;
@@ -81,6 +109,10 @@ interface AppState {
   exportConversation: (conversationId: string) => string;
   exportAllConversations: () => string;
   setContactSound: (conversationId: string, sound: string) => void;
+  saveProfile: (id: string) => void;
+  unsaveProfile: (id: string) => void;
+  addToVault: (url: string, category: string) => void;
+  removeFromVault: (id: string) => void;
 }
 
 const MOCK_CONVERSATIONS: Conversation[] = [
@@ -92,10 +124,17 @@ const MOCK_CONVERSATIONS: Conversation[] = [
     lastMessageTime: Date.now() - 120000,
     unreadCount: 2,
     online: true,
+    lastSeen: 'Online Now',
     pinned: true,
     starred: false,
-    distance: '0.3 mi',
+    distance: '350 ft',
     typing: false,
+    stats: {
+      age: 28,
+      position: 'Vers',
+      bodyType: 'Athletic',
+      lookingFor: ['Right Now', 'Friends']
+    },
     messages: [
       { id: 'm1', senderId: 'them', text: 'Hey there 👋', timestamp: Date.now() - 300000, read: true, type: 'text' },
       { id: 'm2', senderId: 'me', text: "What's up?", timestamp: Date.now() - 240000, read: true, type: 'text' },
@@ -111,65 +150,19 @@ const MOCK_CONVERSATIONS: Conversation[] = [
     lastMessageTime: Date.now() - 600000,
     unreadCount: 0,
     online: true,
+    lastSeen: 'Online Now',
     pinned: false,
     starred: true,
     distance: '1.2 mi',
+    stats: {
+      age: 31,
+      position: 'Top',
+      bodyType: 'Toned',
+      lookingFor: ['Dates']
+    },
     messages: [
       { id: 'm5', senderId: 'me', text: 'Wanna hang later?', timestamp: Date.now() - 900000, read: true, type: 'text' },
       { id: 'm6', senderId: 'them', text: 'Sounds good, lmk', timestamp: Date.now() - 600000, read: true, type: 'text' },
-    ],
-  },
-  {
-    id: '3',
-    userName: 'Marcus',
-    userAvatar: '',
-    lastMessage: 'On my way',
-    lastMessageTime: Date.now() - 3600000,
-    unreadCount: 1,
-    online: false,
-    pinned: false,
-    starred: false,
-    distance: '4.7 mi',
-    messages: [
-      { id: 'm7', senderId: 'them', text: 'Where are you?', timestamp: Date.now() - 7200000, read: true, type: 'text' },
-      { id: 'm8', senderId: 'me', text: 'Downtown', timestamp: Date.now() - 5400000, read: true, type: 'text' },
-      { id: 'm9', senderId: 'them', text: 'On my way', timestamp: Date.now() - 3600000, read: false, type: 'text' },
-    ],
-  },
-  {
-    id: '4',
-    userName: 'Tyler',
-    userAvatar: '',
-    lastMessage: '🔥🔥🔥',
-    lastMessageTime: Date.now() - 86400000,
-    unreadCount: 0,
-    online: false,
-    pinned: false,
-    starred: false,
-    distance: '8.1 mi',
-    messages: [
-      { id: 'm10', senderId: 'them', text: 'Nice pics', timestamp: Date.now() - 90000000, read: true, type: 'text' },
-      { id: 'm11', senderId: 'me', text: 'Thanks 😏', timestamp: Date.now() - 89000000, read: true, type: 'text' },
-      { id: 'm12', senderId: 'them', text: '🔥🔥🔥', timestamp: Date.now() - 86400000, read: true, type: 'text' },
-    ],
-  },
-  {
-    id: '5',
-    userName: 'Chris',
-    userAvatar: '',
-    lastMessage: 'Send pics?',
-    lastMessageTime: Date.now() - 1800000,
-    unreadCount: 3,
-    online: true,
-    pinned: false,
-    starred: false,
-    distance: '0.8 mi',
-    messages: [
-      { id: 'm13', senderId: 'them', text: 'Hey cutie', timestamp: Date.now() - 3600000, read: true, type: 'text' },
-      { id: 'm14', senderId: 'me', text: 'Hey! 😊', timestamp: Date.now() - 3000000, read: true, type: 'text' },
-      { id: 'm15', senderId: 'them', text: 'You close?', timestamp: Date.now() - 2400000, read: false, type: 'text' },
-      { id: 'm16', senderId: 'them', text: 'What are you into?', timestamp: Date.now() - 2000000, read: false, type: 'text' },
-      { id: 'm17', senderId: 'them', text: 'Send pics?', timestamp: Date.now() - 1800000, read: false, type: 'text' },
     ],
   },
 ];
@@ -180,6 +173,8 @@ export const useAppStore = create<AppState>()(
       unlocked: false,
       activeConversation: null,
       conversations: MOCK_CONVERSATIONS,
+      savedProfiles: [],
+      photoVault: [],
       settings: {
         loginMethod: 'chrome',
         pollingInterval: 15,
@@ -207,12 +202,25 @@ export const useAppStore = create<AppState>()(
         activePlatform: 'sniffies',
         stayOnlineBackground: true,
         nativeBubblesEnabled: false,
+        autoPilotEnabled: false,
+        autoGreetEnabled: false,
+        stealthMode: false,
+        moodSyncEnabled: true,
+        catfishGuardEnabled: true,
+        visionHunterEnabled: false,
+        hunterPreferences: {
+          minAge: 18,
+          maxAge: 50,
+          bodyType: [],
+          ethnicity: [],
+        },
+        macros: ['Looking?', 'Location?', 'Snap?', 'Pics?', 'Hosting?'],
+        planGuardEnabled: true,
       },
       setUnlocked: (val) => set({ unlocked: val }),
       setActiveConversation: (id) => {
         set({ activeConversation: id });
         if (id) {
-          // Mark as read when opening
           const state = get();
           const convo = state.conversations.find(c => c.id === id);
           if (convo && convo.unreadCount > 0) {
@@ -377,12 +385,26 @@ export const useAppStore = create<AppState>()(
             c.id === conversationId ? { ...c, notificationSound: sound } : c
           ),
         })),
+      saveProfile: (id) => set((state) => ({
+        savedProfiles: [...new Set([...state.savedProfiles, id])]
+      })),
+      unsaveProfile: (id) => set((state) => ({
+        savedProfiles: state.savedProfiles.filter(p => p !== id)
+      })),
+      addToVault: (url, category) => set((state) => ({
+        photoVault: [...state.photoVault, { id: `p${Date.now()}`, url, category, timestamp: Date.now() }]
+      })),
+      removeFromVault: (id) => set((state) => ({
+        photoVault: state.photoVault.filter(p => p.id !== id)
+      })),
     }),
     {
       name: 'sniffbubble-storage',
       partialize: (state) => ({
         settings: state.settings,
         conversations: state.conversations,
+        savedProfiles: state.savedProfiles,
+        photoVault: state.photoVault,
       }),
     }
   )
