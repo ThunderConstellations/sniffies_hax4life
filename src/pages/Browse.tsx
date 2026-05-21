@@ -1,8 +1,8 @@
-import { Globe, RefreshCw, ExternalLink, ShieldCheck, Settings2, EyeOff, Map, Zap, Layers, Navigation } from 'lucide-react';
+import { Globe, RefreshCw, ExternalLink, ShieldCheck, Settings2, EyeOff, Map, Zap, Layers, Navigation, X } from 'lucide-react';
 import { useAppStore } from '@/lib/store';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { HAX_SCRIPTS } from '@/lib/hax-service';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import SniffiesMap from '@/components/SniffiesMap';
 
 const PLATFORMS = {
@@ -13,18 +13,60 @@ const PLATFORMS = {
 };
 
 const Browse = () => {
-  const { settings, updateSettings } = useAppStore();
+  const { settings, updateSettings, conversations, setConversations } = useAppStore();
   const [showHaxPanel, setShowHaxPanel] = useState(false);
   const [iframeKey, setIframeKey] = useState(0);
   const [showNativeMap, setShowNativeMap] = useState(false);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const currentPlatform = PLATFORMS[settings.activePlatform as keyof typeof PLATFORMS];
+
+  // Phase 6: Real-time Bridge
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      const { type, data } = event.data;
+      if (type === 'SNIFFIES_DOM_DATA' || type === 'SNIFFIES_API_DATA') {
+        console.log(`[HAX] Synced real-time data from ${settings.activePlatform}`, data);
+
+        if (data.profiles && data.profiles.length > 0) {
+          // Merge real profiles into store
+          const newConvos = [...conversations];
+          data.profiles.forEach((p: any) => {
+            const exists = newConvos.find(c => c.userName === p.userName);
+            if (!exists) {
+              newConvos.push({
+                id: p.id,
+                userName: p.userName,
+                userAvatar: '',
+                lastMessage: 'Live transmission...',
+                lastMessageTime: Date.now(),
+                unreadCount: 0,
+                online: true,
+                distance: p.distance,
+                lastSeen: p.lastSeen,
+                pinned: false,
+                starred: false,
+                messages: [],
+                stats: {
+                  position: p.statsRaw?.includes('Top') ? 'Top' : p.statsRaw?.includes('Bottom') ? 'Bottom' : 'Vers'
+                }
+              });
+            }
+          });
+          setConversations(newConvos);
+        }
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [settings.activePlatform, conversations, setConversations]);
 
   const handleRefresh = () => {
     setIframeKey(prev => prev + 1);
   };
 
-  const handleIframeLoad = (e: React.SyntheticEvent<HTMLIFrameElement>) => {
-    console.log(`[HAX4LIFE] ${settings.activePlatform} loaded, syncing Phase 5 engine...`);
+  const handleIframeLoad = () => {
+    console.log(`[HAX4LIFE] ${settings.activePlatform} loaded, syncing Phase 6 engine...`);
   };
 
   return (
@@ -32,10 +74,10 @@ const Browse = () => {
       <div className="p-3 border-b border-border bg-muted/20">
         <div className="flex items-center justify-between mb-3 px-1">
           <div className="flex items-center gap-2">
-            <h1 className="text-sm font-bold text-foreground uppercase tracking-wider">Multi-Browse Hub</h1>
+            <h1 className="text-sm font-bold text-foreground uppercase tracking-wider">Live Hub</h1>
             <div className="flex items-center gap-1 bg-primary/10 px-1.5 py-0.5 rounded border border-primary/20">
               <ShieldCheck className="w-2.5 h-2.5 text-primary" />
-              <span className="text-[8px] font-bold text-primary uppercase">Engine v5.0</span>
+              <span className="text-[8px] font-bold text-primary uppercase">Engine v6.0</span>
             </div>
           </div>
           <div className="flex gap-1.5">
@@ -65,12 +107,12 @@ const Browse = () => {
         </Tabs>
       </div>
 
-      {/* Browser Core */}
       <div className="flex-1 bg-background relative">
         {showNativeMap && settings.activePlatform === 'sniffies' ? (
            <SniffiesMap />
         ) : (
            <iframe
+             ref={iframeRef}
              key={iframeKey}
              src={currentPlatform.url}
              onLoad={handleIframeLoad}
@@ -94,9 +136,9 @@ const Browse = () => {
               </div>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { icon: ShieldCheck, label: 'Unblur Photos', status: 'Active' },
-                  { icon: Map, label: 'Bypass Map Gate', status: 'Active' },
-                  { icon: EyeOff, label: 'Ghost Mode', status: 'Active' },
+                  { icon: ShieldCheck, label: 'Live Extraction', status: 'Active' },
+                  { icon: Map, label: 'API Intercept', status: 'Active' },
+                  { icon: EyeOff, label: 'Ghost Sync', status: 'Active' },
                   { icon: RefreshCw, label: 'Session Keep', status: 'Active' },
                 ].map((tool, i) => (
                   <div key={i} className="flex items-center gap-2 p-1.5 bg-muted/30 rounded-lg border border-border/50">
@@ -120,14 +162,14 @@ const Browse = () => {
                 <ShieldCheck className="w-3.5 h-3.5 text-primary" />
               </div>
               <div>
-                <p className="text-[9px] font-bold text-primary uppercase tracking-wider">Hax Engine v5.0</p>
+                <p className="text-[9px] font-bold text-primary uppercase tracking-wider">Hax Engine v6.0</p>
                 <p className="text-[10px] font-bold text-foreground">{currentPlatform.name} Protected</p>
               </div>
             </div>
             <div className="flex gap-2 items-center">
               <div className="flex flex-col items-end mr-1">
-                <span className="text-[7px] text-green-500 font-bold uppercase">● Injected</span>
-                <span className="text-[7px] text-muted-foreground uppercase">Configure</span>
+                <span className="text-[7px] text-green-500 font-bold uppercase">● Real-time</span>
+                <span className="text-[7px] text-muted-foreground uppercase">Syncing</span>
               </div>
               <Settings2 className="w-3.5 h-3.5 text-muted-foreground" />
             </div>

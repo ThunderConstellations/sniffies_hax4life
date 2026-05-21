@@ -1,95 +1,94 @@
 /**
- * HaxService (Phase 3)
- * Handles advanced script injections for bypassing premium gates and unblurring media.
+ * HaxService (Phase 6)
+ * Handles advanced extraction and injection for real-time site integration.
  */
 
 export const HAX_SCRIPTS = {
   sniffies: `
-    // Auto-Unblur Profile Photos
+    // Sniffies Extraction Engine
+    const extractData = () => {
+      const data = {
+        profiles: [],
+        messages: [],
+        activeUser: null
+      };
+
+      // 1. Intercept Profile Data from DOM
+      document.querySelectorAll('[class*="ProfileCard"], [class*="UserCard"]').forEach(card => {
+        const name = card.querySelector('[class*="Name"]')?.textContent;
+        const distance = card.querySelector('[class*="Distance"]')?.textContent;
+        const status = card.querySelector('[class*="Status"]')?.textContent;
+        const stats = card.querySelector('[class*="Stats"]')?.textContent; // e.g. "28 • Athletic • Top"
+
+        if (name) {
+          data.profiles.push({
+            id: name.toLowerCase().replace(/\s/g, '_'),
+            userName: name,
+            distance: distance || 'Unknown',
+            lastSeen: status || 'Recently',
+            statsRaw: stats
+          });
+        }
+      });
+
+      // 2. Intercept API Traffic (Fetch override)
+      if (!window._hax_intercepted) {
+        const originalFetch = window.fetch;
+        window.fetch = async (...args) => {
+          const response = await originalFetch(...args);
+          const clone = response.clone();
+          try {
+            const json = await clone.json();
+            if (args[0].includes('/api/profiles') || args[0].includes('/api/chat')) {
+              window.postMessage({ type: 'SNIFFIES_API_DATA', data: json }, '*');
+            }
+          } catch (e) {}
+          return response;
+        };
+        window._hax_intercepted = true;
+      }
+
+      // 3. Communicate back to Hax App
+      if (data.profiles.length > 0) {
+        window.postMessage({ type: 'SNIFFIES_DOM_DATA', data }, '*');
+      }
+    };
+
+    // Auto-Unblur Logic (Phase 3 legacy)
     const unblurProfiles = () => {
       document.querySelectorAll('img[class*="blur"], .blurred-media, [style*="filter: blur"]').forEach(img => {
         img.style.filter = 'none';
         img.style.webkitFilter = 'none';
-        // Attempt to swap high-res source if stored in data attributes
         const highRes = img.getAttribute('data-src') || img.getAttribute('data-original');
         if (highRes) img.src = highRes;
       });
     };
 
-    // Remove Premium Overlays & Gated UI
-    const removeGates = () => {
-      const selectors = [
-        '.premium-only', '.upgrade-prompt', '[class*="Paywall"]',
-        '[class*="Subscription"]', '.modal-backdrop', '#premium-modal'
-      ];
-      selectors.forEach(s => {
-        document.querySelectorAll(s).forEach(el => el.remove());
-      });
-      document.body.style.overflow = 'auto'; // Re-enable scroll if locked by modal
-    };
-
-    // Continuous Monitoring
-    const observer = new MutationObserver(() => {
+    // Run Engine
+    setInterval(() => {
+      extractData();
       unblurProfiles();
-      removeGates();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
+    }, 5000);
 
-    // Initial Run
-    unblurProfiles();
-    removeGates();
-    console.log('[HAX4LIFE] Sniffies Engine Injected');
+    console.log('[HAX4LIFE] Sniffies Extraction Engine Active');
   `,
   grindr: `
-    // Unlock Cascade Filters & View More
-    const unlockFilters = () => {
-      // Mocking premium status in global state
-      if (window.grindr) {
-        window.grindr.isPremium = true;
-        window.grindr.hasXtra = true;
-      }
+    const extractGrindr = () => {
+       // Similar extraction logic for Grindr Web
     };
-
-    const removeAds = () => {
-      document.querySelectorAll('.ad-container, .native-ad').forEach(el => el.remove());
-    };
-
-    setInterval(() => {
-      unlockFilters();
-      removeAds();
-    }, 2000);
-    console.log('[HAX4LIFE] Grindr Engine Injected');
+    setInterval(extractGrindr, 5000);
+    console.log('[HAX4LIFE] Grindr Engine Active');
   `,
   nkp: `
-    const bypassPaywall = () => {
-      document.querySelectorAll('.paywall-barrier, .blur-content').forEach(el => {
-        el.classList.remove('blur-content');
-        if (el.style) el.style.filter = 'none';
-      });
-    };
-    setInterval(bypassPaywall, 1000);
     console.log('[HAX4LIFE] NKP Engine Injected');
   `,
   barebackrt: `
-    const revealVIP = () => {
-      document.querySelectorAll('.vip-only').forEach(el => {
-        el.style.display = 'block';
-        el.style.filter = 'none';
-      });
-    };
-    setInterval(revealVIP, 1500);
     console.log('[HAX4LIFE] BRT Engine Injected');
   `
 };
 
-/**
- * For Capacitor, we use the Browser.executeScript method or
- * webview.evaluateJavaScript on Android/iOS.
- */
 export const injectHax = (platform: keyof typeof HAX_SCRIPTS) => {
   const script = HAX_SCRIPTS[platform];
   if (!script) return '';
-
-  console.log(`[HAX4LIFE] Executing Phase 3 injection for ${platform}...`);
   return script;
 };

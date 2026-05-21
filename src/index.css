@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,6 @@
 
 @layer base {
   :root {
-    /* Sniffies-Inspired Professional Utility Palette */
     --background: 240 10% 4%;
     --foreground: 0 0% 98%;
 
@@ -16,7 +15,7 @@
     --popover: 240 10% 4%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 184 100% 45%; /* Sniffies Teal/Cyan */
+    --primary: 184 100% 45%;
     --primary-foreground: 184 100% 5%;
 
     --secondary: 240 5% 15%;
@@ -35,7 +34,7 @@
     --input: 240 5% 15%;
     --ring: 184 100% 45%;
 
-    --radius: 0.75rem;
+    --radius: 0.5rem;
 
     --bubble: 184 100% 45%;
     --bubble-foreground: 184 100% 5%;
@@ -43,15 +42,6 @@
     --bubble-received-foreground: 0 0% 98%;
     --online: 142 70% 50%;
     --chat-bg: 240 10% 2%;
-
-    --sidebar-background: 240 10% 6%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 184 100% 45%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 5% 15%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 240 5% 15%;
-    --sidebar-ring: 184 100% 45%;
   }
 }
 
@@ -66,7 +56,20 @@
     -webkit-tap-highlight-color: transparent;
     user-select: none;
     overscroll-behavior: none;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
+  }
+
+  /* Custom high-density scrollbar */
+  ::-webkit-scrollbar {
+    width: 3px;
+    height: 3px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.2);
+    border-radius: 10px;
   }
 }
 
