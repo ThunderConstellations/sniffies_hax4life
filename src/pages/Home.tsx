@@ -1,13 +1,14 @@
 import { useAppStore } from '@/lib/store';
-import { Shield, Zap, MessageSquare, Globe, Bot, Star, Activity, Clock, MapPin, Search, Image as ImageIcon, Plus, Lock } from 'lucide-react';
+import { Shield, Zap, MessageSquare, Globe, Bot, Star, Activity, Clock, MapPin, Search, Image as ImageIcon, Plus, Lock, Trash2, TrendingUp } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { useState } from 'react';
+import TelemetryView from '@/components/TelemetryView';
 
 const Home = () => {
   const { conversations, settings, photoVault, addToVault, removeFromVault } = useAppStore();
   const unreadCount = conversations.reduce((sum, c) => sum + (c.unreadCount || 0), 0);
   const onlineCount = conversations.filter(c => c.online).length;
-  const [activeHomeTab, setActiveHomeTab] = useState<'hub' | 'vault'>('hub');
+  const [activeHomeTab, setActiveHomeTab] = useState<'hub' | 'vault' | 'telemetry'>('hub');
 
   return (
     <div className="flex flex-col h-full overflow-y-auto bg-background">
@@ -20,28 +21,34 @@ const Home = () => {
              </div>
              <div>
                 <h1 className="text-sm font-black text-foreground uppercase tracking-widest leading-tight">Sniffies Hax</h1>
-                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">System Engine v5.1.0</p>
+                <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-tighter">System Engine v7.0.0</p>
              </div>
           </div>
           <div className="flex gap-2">
              <button
                onClick={() => setActiveHomeTab('hub')}
-               className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border transition-all ${activeHomeTab === 'hub' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-muted/50 border-border text-muted-foreground'}`}
+               className={`p-1.5 rounded-lg border transition-all ${activeHomeTab === 'hub' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-muted/50 border-border text-muted-foreground'}`}
              >
-               Hub
+               <Globe className="w-4 h-4" />
              </button>
              <button
                onClick={() => setActiveHomeTab('vault')}
-               className={`px-2.5 py-1 rounded-lg text-[9px] font-black uppercase border transition-all ${activeHomeTab === 'vault' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-muted/50 border-border text-muted-foreground'}`}
+               className={`p-1.5 rounded-lg border transition-all ${activeHomeTab === 'vault' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-muted/50 border-border text-muted-foreground'}`}
              >
-               Vault
+               <ImageIcon className="w-4 h-4" />
+             </button>
+             <button
+               onClick={() => setActiveHomeTab('telemetry')}
+               className={`p-1.5 rounded-lg border transition-all ${activeHomeTab === 'telemetry' ? 'bg-primary/10 border-primary/20 text-primary' : 'bg-muted/50 border-border text-muted-foreground'}`}
+             >
+               <TrendingUp className="w-4 h-4" />
              </button>
           </div>
         </div>
       </div>
 
       <div className="p-4 space-y-4 pb-24">
-        {activeHomeTab === 'hub' ? (
+        {activeHomeTab === 'hub' && (
           <>
             {/* Real-time Telemetry */}
             <div className="grid grid-cols-2 gap-3">
@@ -51,9 +58,6 @@ const Home = () => {
                   <span className="text-[8px] font-black text-muted-foreground uppercase">Inbox</span>
                 </div>
                 <p className="text-xl font-black tracking-tighter relative z-10">{unreadCount}</p>
-                <div className="absolute -bottom-2 -right-2 opacity-5">
-                   <MessageSquare className="w-12 h-12 text-primary" />
-                </div>
               </div>
               <div className="bg-muted/30 border border-border rounded-xl p-3 flex flex-col gap-1.5 relative overflow-hidden">
                 <div className="flex items-center justify-between relative z-10">
@@ -61,9 +65,6 @@ const Home = () => {
                   <span className="text-[8px] font-black text-muted-foreground uppercase">Proximity</span>
                 </div>
                 <p className="text-xl font-black tracking-tighter relative z-10">{onlineCount}</p>
-                <div className="absolute -bottom-2 -right-2 opacity-5">
-                   <Activity className="w-12 h-12 text-online" />
-                </div>
               </div>
             </div>
 
@@ -122,8 +123,9 @@ const Home = () => {
                </div>
             </div>
           </>
-        ) : (
-          /* Photo Vault UI */
+        )}
+
+        {activeHomeTab === 'vault' && (
           <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
              <div className="flex items-center justify-between px-1">
                 <div>
@@ -137,18 +139,11 @@ const Home = () => {
                    <Plus className="w-4 h-4" />
                 </button>
              </div>
-
              <div className="grid grid-cols-3 gap-2">
-                {photoVault.length === 0 ? (
-                  <div className="col-span-3 py-12 flex flex-col items-center justify-center bg-muted/10 border border-dashed border-border rounded-2xl">
-                     <ImageIcon className="w-8 h-8 text-muted-foreground/20 mb-3" />
-                     <p className="text-[9px] font-black text-muted-foreground uppercase">Vault is Empty</p>
-                  </div>
-                ) : (
-                  photoVault.map((photo) => (
+                {photoVault.map((photo) => (
                     <div key={photo.id} className="relative aspect-square bg-muted rounded-xl overflow-hidden group">
                        <img src={photo.url} alt="Vault" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
-                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                           <button onClick={() => removeFromVault(photo.id)} className="p-1.5 bg-destructive text-white rounded-lg">
                              <Trash2 className="w-3 h-3" />
                           </button>
@@ -159,19 +154,12 @@ const Home = () => {
                           </div>
                        )}
                     </div>
-                  ))
-                )}
-             </div>
-
-             <div className="p-4 bg-muted/20 border border-border rounded-2xl">
-                <h3 className="text-[9px] font-black uppercase text-muted-foreground mb-2">Vault Statistics</h3>
-                <div className="flex justify-between text-[10px] font-bold uppercase">
-                   <span>Items Stored</span>
-                   <span className="text-primary">{photoVault.length}</span>
-                </div>
+                ))}
              </div>
           </div>
         )}
+
+        {activeHomeTab === 'telemetry' && <TelemetryView />}
 
         {/* Quick Utility Grid */}
         <div className="space-y-2 pt-2">

@@ -43,6 +43,22 @@ export interface Conversation {
   stats?: ProfileStats;
 }
 
+export interface SafeZone {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  radius: number;
+}
+
+export interface IdentityProfile {
+  id: string;
+  name: string;
+  geminiKey: string;
+  openRouterKey: string;
+  activePlatform: 'sniffies' | 'nkp' | 'barebackrt' | 'grindr';
+}
+
 export interface AppSettings {
   loginMethod: 'webview' | 'chrome' | 'sniffies-app';
   pollingInterval: number;
@@ -76,43 +92,50 @@ export interface AppSettings {
   moodSyncEnabled: boolean;
   catfishGuardEnabled: boolean;
   visionHunterEnabled: boolean;
-  hunterPreferences: {
-    minAge: number;
-    maxAge: number;
-    bodyType: string[];
-    ethnicity: string[];
-  };
+  hunterPreferences: { minAge: number; maxAge: number; bodyType: string[]; ethnicity: string[] };
   macros: string[];
   planGuardEnabled: boolean;
+  safetyShieldEnabled: boolean;
+  geoFencingEnabled: boolean;
+  proximityAlertRadius: number;
+  labCustomJS: string;
+  labCustomCSS: string;
 }
 
 interface AppState {
   unlocked: boolean;
   activeConversation: string | null;
   conversations: Conversation[];
-  savedProfiles: string[]; // List of conversation IDs or profile IDs
+  savedProfiles: string[];
   photoVault: { id: string; url: string; category: string; timestamp: number }[];
+  safeZones: SafeZone[];
+  identities: IdentityProfile[];
+  activeIdentityId: string;
   settings: AppSettings;
   setUnlocked: (val: boolean) => void;
   setActiveConversation: (id: string | null) => void;
   setConversations: (convos: Conversation[]) => void;
   updateSettings: (partial: Partial<AppSettings>) => void;
   sendMessage: (conversationId: string, text: string, type?: 'text' | 'image', imageUrl?: string) => void;
-  togglePin: (conversationId: string) => void;
-  toggleStar: (conversationId: string) => void;
-  toggleMute: (conversationId: string) => void;
-  toggleArchive: (conversationId: string) => void;
-  deleteMessage: (conversationId: string, messageId: string) => void;
-  addReaction: (conversationId: string, messageId: string, emoji: string) => void;
-  markAsRead: (conversationId: string) => void;
-  deleteConversation: (conversationId: string) => void;
-  exportConversation: (conversationId: string) => string;
+  togglePin: (id: string) => void;
+  toggleStar: (id: string) => void;
+  toggleMute: (id: string) => void;
+  toggleArchive: (id: string) => void;
+  deleteMessage: (cid: string, mid: string) => void;
+  addReaction: (cid: string, mid: string, e: string) => void;
+  markAsRead: (id: string) => void;
+  deleteConversation: (id: string) => void;
+  exportConversation: (id: string) => string;
   exportAllConversations: () => string;
-  setContactSound: (conversationId: string, sound: string) => void;
+  setContactSound: (id: string, s: string) => void;
   saveProfile: (id: string) => void;
   unsaveProfile: (id: string) => void;
-  addToVault: (url: string, category: string) => void;
+  addToVault: (u: string, c: string) => void;
   removeFromVault: (id: string) => void;
+  addSafeZone: (z: SafeZone) => void;
+  removeSafeZone: (id: string) => void;
+  switchIdentity: (id: string) => void;
+  addIdentity: (i: IdentityProfile) => void;
 }
 
 const MOCK_CONVERSATIONS: Conversation[] = [
@@ -128,41 +151,11 @@ const MOCK_CONVERSATIONS: Conversation[] = [
     pinned: true,
     starred: false,
     distance: '350 ft',
-    typing: false,
-    stats: {
-      age: 28,
-      position: 'Vers',
-      bodyType: 'Athletic',
-      lookingFor: ['Right Now', 'Friends']
-    },
+    stats: { age: 28, position: 'Vers', bodyType: 'Athletic', lookingFor: ['Right Now', 'Friends'] },
     messages: [
       { id: 'm1', senderId: 'them', text: 'Hey there 👋', timestamp: Date.now() - 300000, read: true, type: 'text' },
       { id: 'm2', senderId: 'me', text: "What's up?", timestamp: Date.now() - 240000, read: true, type: 'text' },
       { id: 'm3', senderId: 'them', text: 'Hey, are you nearby?', timestamp: Date.now() - 120000, read: false, type: 'text' },
-      { id: 'm4', senderId: 'them', text: "I'm free rn", timestamp: Date.now() - 60000, read: false, type: 'text' },
-    ],
-  },
-  {
-    id: '2',
-    userName: 'Jordan',
-    userAvatar: '',
-    lastMessage: 'Sounds good, lmk',
-    lastMessageTime: Date.now() - 600000,
-    unreadCount: 0,
-    online: true,
-    lastSeen: 'Online Now',
-    pinned: false,
-    starred: true,
-    distance: '1.2 mi',
-    stats: {
-      age: 31,
-      position: 'Top',
-      bodyType: 'Toned',
-      lookingFor: ['Dates']
-    },
-    messages: [
-      { id: 'm5', senderId: 'me', text: 'Wanna hang later?', timestamp: Date.now() - 900000, read: true, type: 'text' },
-      { id: 'm6', senderId: 'them', text: 'Sounds good, lmk', timestamp: Date.now() - 600000, read: true, type: 'text' },
     ],
   },
 ];
@@ -175,6 +168,9 @@ export const useAppStore = create<AppState>()(
       conversations: MOCK_CONVERSATIONS,
       savedProfiles: [],
       photoVault: [],
+      safeZones: [],
+      identities: [{ id: 'default', name: 'Primary Hax', geminiKey: '', openRouterKey: '', activePlatform: 'sniffies' }],
+      activeIdentityId: 'default',
       settings: {
         loginMethod: 'chrome',
         pollingInterval: 15,
@@ -208,203 +204,61 @@ export const useAppStore = create<AppState>()(
         moodSyncEnabled: true,
         catfishGuardEnabled: true,
         visionHunterEnabled: false,
-        hunterPreferences: {
-          minAge: 18,
-          maxAge: 50,
-          bodyType: [],
-          ethnicity: [],
-        },
+        hunterPreferences: { minAge: 18, maxAge: 50, bodyType: [], ethnicity: [] },
         macros: ['Looking?', 'Location?', 'Snap?', 'Pics?', 'Hosting?'],
         planGuardEnabled: true,
+        safetyShieldEnabled: true,
+        geoFencingEnabled: false,
+        proximityAlertRadius: 500,
+        labCustomJS: '',
+        labCustomCSS: '',
       },
       setUnlocked: (val) => set({ unlocked: val }),
-      setActiveConversation: (id) => {
-        set({ activeConversation: id });
-        if (id) {
-          const state = get();
-          const convo = state.conversations.find(c => c.id === id);
-          if (convo && convo.unreadCount > 0) {
-            set({
-              conversations: state.conversations.map(c =>
-                c.id === id
-                  ? {
-                      ...c,
-                      unreadCount: 0,
-                      messages: c.messages.map(m => ({ ...m, read: true })),
-                    }
-                  : c
-              ),
-            });
-          }
-        }
-      },
+      setActiveConversation: (id) => set({ activeConversation: id }),
       setConversations: (convos) => set({ conversations: convos }),
-      updateSettings: (partial) =>
-        set((state) => ({ settings: { ...state.settings, ...partial } })),
-      sendMessage: (conversationId, text, type = 'text', imageUrl) =>
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversationId
-              ? {
-                  ...c,
-                  lastMessage: type === 'image' ? '📷 Photo' : text,
-                  lastMessageTime: Date.now(),
-                  messages: [
-                    ...c.messages,
-                    {
-                      id: `m${Date.now()}`,
-                      senderId: 'me',
-                      text,
-                      timestamp: Date.now(),
-                      read: false,
-                      type,
-                      imageUrl,
-                    },
-                  ],
-                }
-              : c
-          ),
-        })),
-      togglePin: (conversationId) =>
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversationId ? { ...c, pinned: !c.pinned } : c
-          ),
-        })),
-      toggleStar: (conversationId) =>
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversationId ? { ...c, starred: !c.starred } : c
-          ),
-        })),
-      toggleMute: (conversationId) =>
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversationId ? { ...c, muted: !c.muted } : c
-          ),
-        })),
-      toggleArchive: (conversationId) =>
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversationId ? { ...c, archived: !c.archived } : c
-          ),
-        })),
-      deleteMessage: (conversationId, messageId) =>
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversationId
-              ? {
-                  ...c,
-                  messages: c.messages.map((m) =>
-                    m.id === messageId ? { ...m, deleted: true, text: 'Message deleted' } : m
-                  ),
-                }
-              : c
-          ),
-        })),
-      addReaction: (conversationId, messageId, emoji) =>
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversationId
-              ? {
-                  ...c,
-                  messages: c.messages.map((m) =>
-                    m.id === messageId
-                      ? {
-                          ...m,
-                          reactions: m.reactions?.includes(emoji)
-                            ? m.reactions.filter((r) => r !== emoji)
-                            : [...(m.reactions || []), emoji],
-                        }
-                      : m
-                  ),
-                }
-              : c
-          ),
-        })),
-      markAsRead: (conversationId) =>
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversationId
-              ? {
-                  ...c,
-                  unreadCount: 0,
-                  messages: c.messages.map((m) => ({ ...m, read: true })),
-                }
-              : c
-          ),
-        })),
-      deleteConversation: (conversationId) =>
-        set((state) => ({
-          conversations: state.conversations.filter((c) => c.id !== conversationId),
-          activeConversation:
-            state.activeConversation === conversationId ? null : state.activeConversation,
-        })),
-      exportConversation: (conversationId) => {
-        const convo = get().conversations.find((c) => c.id === conversationId);
-        if (!convo) return '';
-        return JSON.stringify(
-          {
-            userName: convo.userName,
-            exportedAt: new Date().toISOString(),
-            messageCount: convo.messages.length,
-            messages: convo.messages.map((m) => ({
-              sender: m.senderId === 'me' ? 'You' : convo.userName,
-              text: m.text,
-              time: new Date(m.timestamp).toISOString(),
-              type: m.type,
-            })),
-          },
-          null,
-          2
-        );
+      updateSettings: (partial) => set((state) => ({ settings: { ...state.settings, ...partial } })),
+      sendMessage: (cid, t, ty = 'text', img) => set((state) => ({
+          conversations: state.conversations.map((c) => c.id === cid ? {
+            ...c, lastMessage: ty === 'image' ? '📷 Photo' : t, lastMessageTime: Date.now(),
+            messages: [...c.messages, { id: `m${Date.now()}`, senderId: 'me', text: t, timestamp: Date.now(), read: false, type: ty, imageUrl: img }]
+          } : c)
+      })),
+      togglePin: (id) => set((state) => ({ conversations: state.conversations.map(c => c.id === id ? { ...c, pinned: !c.pinned } : c) })),
+      toggleStar: (id) => set((state) => ({ conversations: state.conversations.map(c => c.id === id ? { ...c, starred: !c.starred } : c) })),
+      toggleMute: (id) => set((state) => ({ conversations: state.conversations.map(c => c.id === id ? { ...c, muted: !c.muted } : c) })),
+      toggleArchive: (id) => set((state) => ({ conversations: state.conversations.map(c => c.id === id ? { ...c, archived: !c.archived } : c) })),
+      deleteMessage: (cid, mid) => set((state) => ({ conversations: state.conversations.map(c => c.id === cid ? { ...c, messages: c.messages.map(m => m.id === mid ? { ...m, deleted: true, text: 'Deleted' } : m) } : c) })),
+      addReaction: (cid, mid, e) => set((state) => ({ conversations: state.conversations.map(c => c.id === cid ? { ...c, messages: c.messages.map(m => m.id === mid ? { ...m, reactions: m.reactions?.includes(e) ? m.reactions.filter(r => r !== e) : [...(m.reactions || []), e] } : m) } : c) })),
+      markAsRead: (id) => set((state) => ({ conversations: state.conversations.map(c => c.id === id ? { ...c, unreadCount: 0, messages: c.messages.map(m => ({ ...m, read: true })) } : c) })),
+      deleteConversation: (id) => set((state) => ({ conversations: state.conversations.filter(c => c.id !== id), activeConversation: state.activeConversation === id ? null : state.activeIdentityId })),
+      exportConversation: (id) => JSON.stringify(get().conversations.find(c => c.id === id), null, 2),
+      exportAllConversations: () => JSON.stringify(get().conversations, null, 2),
+      setContactSound: (id, s) => set((state) => ({ conversations: state.conversations.map(c => c.id === id ? { ...c, notificationSound: s } : c) })),
+      saveProfile: (id) => set((state) => ({ savedProfiles: [...new Set([...state.savedProfiles, id])] })),
+      unsaveProfile: (id) => set((state) => ({ savedProfiles: state.savedProfiles.filter(p => p !== id) })),
+      addToVault: (u, c) => set((state) => ({ photoVault: [...state.photoVault, { id: `p${Date.now()}`, url: u, category: c, timestamp: Date.now() }] })),
+      removeFromVault: (id) => set((state) => ({ photoVault: state.photoVault.filter(p => p.id !== id) })),
+      addSafeZone: (z) => set((state) => ({ safeZones: [...state.safeZones, z] })),
+      removeSafeZone: (id) => set((state) => ({ safeZones: state.safeZones.filter(z => z.id !== id) })),
+      switchIdentity: (id) => {
+         const identity = get().identities.find(i => i.id === id);
+         if (identity) {
+            set({ activeIdentityId: id });
+            set((state) => ({ settings: { ...state.settings, geminiKey: identity.geminiKey, openRouterKey: identity.openRouterKey, activePlatform: identity.activePlatform } }));
+         }
       },
-      exportAllConversations: () => {
-        const state = get();
-        return JSON.stringify(
-          {
-            exportedAt: new Date().toISOString(),
-            totalConversations: state.conversations.length,
-            conversations: state.conversations.map((c) => ({
-              userName: c.userName,
-              messageCount: c.messages.length,
-              messages: c.messages.map((m) => ({
-                sender: m.senderId === 'me' ? 'You' : c.userName,
-                text: m.text,
-                time: new Date(m.timestamp).toISOString(),
-              })),
-            })),
-          },
-          null,
-          2
-        );
-      },
-      setContactSound: (conversationId, sound) =>
-        set((state) => ({
-          conversations: state.conversations.map((c) =>
-            c.id === conversationId ? { ...c, notificationSound: sound } : c
-          ),
-        })),
-      saveProfile: (id) => set((state) => ({
-        savedProfiles: [...new Set([...state.savedProfiles, id])]
-      })),
-      unsaveProfile: (id) => set((state) => ({
-        savedProfiles: state.savedProfiles.filter(p => p !== id)
-      })),
-      addToVault: (url, category) => set((state) => ({
-        photoVault: [...state.photoVault, { id: `p${Date.now()}`, url, category, timestamp: Date.now() }]
-      })),
-      removeFromVault: (id) => set((state) => ({
-        photoVault: state.photoVault.filter(p => p.id !== id)
-      })),
+      addIdentity: (i) => set((state) => ({ identities: [...state.identities, i] })),
     }),
     {
-      name: 'sniffbubble-storage',
+      name: 'sniffbubble-storage-v7',
       partialize: (state) => ({
         settings: state.settings,
         conversations: state.conversations,
         savedProfiles: state.savedProfiles,
         photoVault: state.photoVault,
+        safeZones: state.safeZones,
+        identities: state.identities,
+        activeIdentityId: state.activeIdentityId,
       }),
     }
   )

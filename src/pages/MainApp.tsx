@@ -9,22 +9,25 @@ import Settings from '@/pages/Settings';
 import Home from '@/pages/Home';
 import { useAutoPilot } from '@/lib/autopilot-service';
 import { useNotificationBridge } from '@/lib/notification-service';
+import { useProximityEngine } from '@/lib/proximity-service';
 import ProfileViewer from '@/components/ProfileViewer';
 
-type Tab = 'home' | 'chats' | 'browse' | 'settings' | 'profile';
+type Tab = 'home' | 'chats' | 'browse' | 'settings';
 
 const MainApp = () => {
   const [tab, setTab] = useState<Tab>('home');
   const { activeConversation, conversations, settings } = useAppStore();
   const { processIncomingMessage } = useAutoPilot();
   const { handlePlatformNotification } = useNotificationBridge();
+  const { checkProximity } = useProximityEngine();
 
+  // Phase 7: Global Monitor
   useEffect(() => {
-    const checkInterval = setInterval(() => {
-      // Background logic simulation
-    }, 10000);
-    return () => clearInterval(checkInterval);
-  }, [settings.autoPilotEnabled]);
+    const monitorInterval = setInterval(() => {
+      checkProximity();
+    }, 30000); // Check every 30s
+    return () => clearInterval(monitorInterval);
+  }, [conversations, settings.proximityAlertRadius]);
 
   const tabs: { id: Tab; icon: typeof MessageCircle; label: string }[] = [
     { id: 'home', icon: HomeIcon, label: 'Hub' },
@@ -34,8 +37,6 @@ const MainApp = () => {
   ];
 
   if (activeConversation) {
-    const convo = conversations.find(c => c.id === activeConversation);
-    if (convo) return <ProfileViewer convo={convo} onClose={() => {}} />;
     return <ChatView />;
   }
 

@@ -1,14 +1,20 @@
+import { useState } from 'react';
 import { useAppStore } from '@/lib/store';
+import {
+  Shield, Bot, Eye, Battery, Download, Trash2,
+  FileText, Key, Type, Moon, Globe, Terminal, Code,
+  Zap, MapPin, ShieldCheck, Lock, Bell, UserPlus, Users
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
-import { Shield, Bell, Wifi, Battery, Download, Eye, Lock, Palette, Type, Moon, FileText, Vibrate, Bot, Key } from 'lucide-react';
+import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
+import HaxLab from '@/components/HaxLab';
 
 const Settings = () => {
-  const { settings, updateSettings, setUnlocked, exportAllConversations } = useAppStore();
+  const { settings, updateSettings, setUnlocked, exportAllConversations, identities, activeIdentityId, switchIdentity, addIdentity } = useAppStore();
+  const [showLab, setShowLab] = useState(false);
 
   const handleExportAll = () => {
     const data = exportAllConversations();
@@ -16,402 +22,204 @@ const Settings = () => {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `sniffbubble-backup-${Date.now()}.json`;
+    a.download = `hax_backup_${new Date().toISOString()}.json`;
     a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Backup exported successfully');
+    toast.success('All conversations exported');
   };
 
+  const createIdentity = () => {
+     const id = `id${Date.now()}`;
+     addIdentity({ id, name: `Profile ${identities.length + 1}`, geminiKey: '', openRouterKey: '', activePlatform: 'sniffies' });
+     toast.success('New transmission identity created');
+  };
+
+  if (showLab) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="p-4 border-b border-border bg-background flex items-center gap-3">
+          <button onClick={() => setShowLab(false)} className="p-2 hover:bg-muted rounded-lg text-muted-foreground">
+            <Globe className="w-5 h-5" />
+          </button>
+          <h1 className="text-sm font-black uppercase tracking-widest">Hax Lab</h1>
+        </div>
+        <HaxLab />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex flex-col h-full overflow-y-auto">
-      <div className="p-4 pb-2">
-        <h1 className="text-xl font-bold text-foreground">Settings</h1>
-        <p className="text-xs text-muted-foreground mt-0.5">SniffBubble v1.0</p>
+    <div className="flex flex-col h-full overflow-y-auto bg-background animate-in fade-in duration-300">
+      <div className="p-6 pb-2">
+        <h1 className="text-sm font-black text-foreground uppercase tracking-[0.2em] mb-1">Engine Configuration</h1>
+        <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">System Version 7.0.0 Stable</p>
       </div>
 
-      <div className="px-4 pb-24 space-y-3">
-        {/* Connection */}
-        <Card className="border-border bg-card">
+      <div className="p-4 space-y-4 pb-24">
+        {/* Elite Hax Lab Entry */}
+        <button
+          onClick={() => setShowLab(true)}
+          className="w-full p-4 bg-primary/5 border border-primary/20 rounded-2xl flex items-center justify-between group active:scale-[0.98] transition-all"
+        >
+          <div className="flex items-center gap-4">
+             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center shadow-lg shadow-primary/20 group-hover:scale-110 transition-transform">
+                <Terminal className="w-5 h-5 text-primary-foreground" />
+             </div>
+             <div className="text-left">
+                <p className="text-xs font-black uppercase tracking-widest text-foreground">Open Hax Lab</p>
+                <p className="text-[9px] font-bold text-primary uppercase">Manual Script Injection</p>
+             </div>
+          </div>
+          <Zap className="w-4 h-4 text-primary animate-pulse" />
+        </button>
+
+        {/* Identity Profiles */}
+        <Card className="border-border bg-muted/10">
           <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Wifi className="w-4 h-4 text-primary" /> Connection
+             <div className="flex items-center justify-between">
+                <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                  <Users className="w-4 h-4 text-primary" /> Identity Profiles
+                </CardTitle>
+                <button onClick={createIdentity} className="p-1.5 bg-primary/10 text-primary rounded-lg">
+                   <UserPlus className="w-3.5 h-3.5" />
+                </button>
+             </div>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 space-y-2">
+             {identities.map(i => (
+               <button
+                 key={i.id}
+                 onClick={() => switchIdentity(i.id)}
+                 className={`w-full flex items-center justify-between p-3 rounded-xl border text-[9px] font-bold uppercase transition-all ${activeIdentityId === i.id ? 'bg-primary/10 border-primary/40 text-primary' : 'bg-background border-border text-muted-foreground'}`}
+               >
+                  <span>{i.name}</span>
+                  {activeIdentityId === i.id && <span className="text-[7px] bg-primary text-primary-foreground px-1.5 py-0.5 rounded">Active</span>}
+               </button>
+             ))}
+          </CardContent>
+        </Card>
+
+        {/* AI & Automation */}
+        <Card className="border-border bg-muted/10">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+              <Bot className="w-4 h-4 text-primary" /> AI & Automation
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 space-y-4">
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Login Method</label>
-              <Select
-                value={settings.loginMethod}
-                onValueChange={(v) => updateSettings({ loginMethod: v as any })}
-              >
-                <SelectTrigger className="bg-secondary border-none h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="webview">Embedded WebView</SelectItem>
-                  <SelectItem value="chrome">Chrome Session (Default)</SelectItem>
-                  <SelectItem value="sniffies-app">Sniffies App</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-foreground uppercase tracking-tight">AI Auto-Pilot</p>
+                <p className="text-[9px] text-muted-foreground uppercase">Mimic user voice pattern</p>
+              </div>
+              <Switch
+                checked={settings.autoPilotEnabled}
+                onCheckedChange={(v) => updateSettings({ autoPilotEnabled: v })}
+              />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-foreground">Auto Online</p>
-                <p className="text-[11px] text-muted-foreground">Stay visible on Sniffies</p>
+                <p className="text-xs font-bold text-foreground uppercase tracking-tight">AI Plan Guard</p>
+                <p className="text-[9px] text-muted-foreground uppercase">Monitor meeting intent</p>
               </div>
               <Switch
-                checked={settings.autoOnline}
-                onCheckedChange={(v) => updateSettings({ autoOnline: v })}
+                checked={settings.planGuardEnabled}
+                onCheckedChange={(v) => updateSettings({ planGuardEnabled: v })}
               />
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-2 block">
-                Poll interval: {settings.pollingInterval}s
-              </label>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-foreground uppercase tracking-tight">AI Safety Shield</p>
+                <p className="text-[9px] text-muted-foreground uppercase">Risk & Sentiment Analysis</p>
+              </div>
+              <Switch
+                checked={settings.safetyShieldEnabled}
+                onCheckedChange={(v) => updateSettings({ safetyShieldEnabled: v })}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Proximity & Stealth */}
+        <Card className="border-border bg-muted/10">
+          <CardHeader className="p-4 pb-2">
+            <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+              <Shield className="w-4 h-4 text-primary" /> Proximity & Stealth
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 pt-0 space-y-5">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                 <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tighter">Proximity Alarm: {settings.proximityAlertRadius}ft</label>
+              </div>
               <Slider
-                value={[settings.pollingInterval]}
-                onValueChange={([v]) => updateSettings({ pollingInterval: v })}
-                min={5}
-                max={60}
-                step={5}
-                className="w-full"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Notifications */}
-        <Card className="border-border bg-card">
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Bell className="w-4 h-4 text-primary" /> Notifications
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 space-y-4">
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Default Sound</label>
-              <Select
-                value={settings.notificationSound}
-                onValueChange={(v) => updateSettings({ notificationSound: v })}
-              >
-                <SelectTrigger className="bg-secondary border-none h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="default">Default</SelectItem>
-                  <SelectItem value="chime">Chime</SelectItem>
-                  <SelectItem value="pop">Pop</SelectItem>
-                  <SelectItem value="urgent">Urgent</SelectItem>
-                  <SelectItem value="silent">Silent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Vibrate className="w-4 h-4 text-muted-foreground" />
-                <p className="text-sm text-foreground">Vibrate</p>
-              </div>
-              <Switch
-                checked={settings.notificationVibrate}
-                onCheckedChange={(v) => updateSettings({ notificationVibrate: v })}
+                value={[settings.proximityAlertRadius]}
+                onValueChange={([v]) => updateSettings({ proximityAlertRadius: v })}
+                min={100}
+                max={5000}
+                step={100}
               />
             </div>
             <div className="flex items-center justify-between">
               <div>
-                <div className="flex items-center gap-2">
-                  <Moon className="w-4 h-4 text-muted-foreground" />
-                  <p className="text-sm text-foreground">Do Not Disturb</p>
-                </div>
-                <p className="text-[11px] text-muted-foreground ml-6">Silence during set hours</p>
+                <p className="text-xs font-bold text-foreground uppercase tracking-tight">Geo-Fencing</p>
+                <p className="text-[9px] text-muted-foreground uppercase">Auto-Stealth in safe zones</p>
               </div>
               <Switch
-                checked={settings.dndEnabled}
-                onCheckedChange={(v) => updateSettings({ dndEnabled: v })}
+                checked={settings.geoFencingEnabled}
+                onCheckedChange={(v) => updateSettings({ geoFencingEnabled: v })}
               />
             </div>
-            {settings.dndEnabled && (
-              <div className="flex gap-2 ml-6">
-                <div className="flex-1">
-                  <label className="text-[10px] text-muted-foreground">Start</label>
-                  <Input
-                    type="time"
-                    value={settings.dndStart}
-                    onChange={(e) => updateSettings({ dndStart: e.target.value })}
-                    className="bg-secondary border-none h-8 text-xs"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="text-[10px] text-muted-foreground">End</label>
-                  <Input
-                    type="time"
-                    value={settings.dndEnd}
-                    onChange={(e) => updateSettings({ dndEnd: e.target.value })}
-                    className="bg-secondary border-none h-8 text-xs"
-                  />
-                </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs font-bold text-foreground uppercase tracking-tight">Stealth Decoy</p>
+                <p className="text-[9px] text-muted-foreground uppercase">Disguise floating bubble</p>
               </div>
-            )}
+              <Switch
+                checked={settings.stealthMode}
+                onCheckedChange={(v) => updateSettings({ stealthMode: v })}
+              />
+            </div>
           </CardContent>
         </Card>
 
-        {/* Appearance */}
-        <Card className="border-border bg-card">
+        {/* API Keys */}
+        <Card className="border-border bg-muted/10">
           <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Palette className="w-4 h-4 text-primary" /> Appearance
+            <CardTitle className="text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+              <Key className="w-4 h-4 text-primary" /> Transmissions Core
             </CardTitle>
           </CardHeader>
           <CardContent className="p-4 pt-0 space-y-4">
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">Theme</label>
-              <Select
-                value={settings.theme}
-                onValueChange={(v) => updateSettings({ theme: v as any })}
-              >
-                <SelectTrigger className="bg-secondary border-none h-9 text-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="dark">Dark</SelectItem>
-                  <SelectItem value="midnight">Midnight</SelectItem>
-                  <SelectItem value="amoled">AMOLED Black</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-2 flex items-center gap-1.5">
-                <Type className="w-3.5 h-3.5" /> Font Size: {settings.fontSize}px
-              </label>
-              <Slider
-                value={[settings.fontSize]}
-                onValueChange={([v]) => updateSettings({ fontSize: v })}
-                min={12}
-                max={20}
-                step={1}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Chat Bubble */}
-        <Card className="border-border bg-card">
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Eye className="w-4 h-4 text-primary" /> Chat Bubble
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 space-y-4">
-            <div>
-              <label className="text-xs text-muted-foreground mb-2 block">
-                Size: {settings.bubbleSize}px
-              </label>
-              <Slider
-                value={[settings.bubbleSize]}
-                onValueChange={([v]) => updateSettings({ bubbleSize: v })}
-                min={40}
-                max={80}
-                step={4}
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-2 block">
-                Opacity: {settings.bubbleOpacity}%
-              </label>
-              <Slider
-                value={[settings.bubbleOpacity]}
-                onValueChange={([v]) => updateSettings({ bubbleOpacity: v })}
-                min={40}
-                max={100}
-                step={5}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-foreground">Show Distance</p>
-              <Switch
-                checked={settings.showDistance}
-                onCheckedChange={(v) => updateSettings({ showDistance: v })}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-foreground">Read Receipts</p>
-              <Switch
-                checked={settings.showReadReceipts}
-                onCheckedChange={(v) => updateSettings({ showReadReceipts: v })}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-foreground">Typing Indicator</p>
-              <Switch
-                checked={settings.showTypingIndicator}
-                onCheckedChange={(v) => updateSettings({ showTypingIndicator: v })}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Battery */}
-        <Card className="border-border bg-card">
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Battery className="w-4 h-4 text-primary" /> Battery
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground">Battery Saver</p>
-                <p className="text-[11px] text-muted-foreground">Reduce polling to 60s</p>
-              </div>
-              <Switch
-                checked={settings.batterySaver}
-                onCheckedChange={(v) => updateSettings({ batterySaver: v })}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Backup */}
-        <Card className="border-border bg-card">
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Download className="w-4 h-4 text-primary" /> Backup & Export
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground">Auto Backup</p>
-                <p className="text-[11px] text-muted-foreground">Save chats locally</p>
-              </div>
-              <Switch
-                checked={settings.autoBackup}
-                onCheckedChange={(v) => updateSettings({ autoBackup: v })}
-              />
-            </div>
-            {settings.autoBackup && (
-              <div>
-                <label className="text-xs text-muted-foreground mb-2 block">
-                  Backup every {settings.backupInterval}h
-                </label>
-                <Slider
-                  value={[settings.backupInterval]}
-                  onValueChange={([v]) => updateSettings({ backupInterval: v })}
-                  min={1}
-                  max={72}
-                  step={1}
+             <div className="space-y-2">
+                <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">Gemini Engine Key</label>
+                <input
+                  type="password"
+                  value={settings.geminiKey}
+                  onChange={(e) => updateSettings({ geminiKey: e.target.value })}
+                  placeholder="X-KEY-..."
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs font-mono focus:border-primary/50 outline-none"
                 />
-              </div>
-            )}
-            <button
-              onClick={handleExportAll}
-              className="flex items-center gap-2 text-sm text-primary w-full py-2 px-3 bg-primary/10 rounded-lg"
-            >
-              <FileText className="w-4 h-4" /> Export All Chats as JSON
-            </button>
+             </div>
+             <div className="space-y-2">
+                <label className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">OpenRouter Key</label>
+                <input
+                  type="password"
+                  value={settings.openRouterKey}
+                  onChange={(e) => updateSettings({ openRouterKey: e.target.value })}
+                  placeholder="SK-..."
+                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-xs font-mono focus:border-primary/50 outline-none"
+                />
+             </div>
           </CardContent>
         </Card>
 
-        {/* AI Integration */}
-        <Card className="border-border bg-card">
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Bot className="w-4 h-4 text-primary" /> AI Assistant
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 space-y-4">
-            <div>
-              <label className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1 uppercase font-bold tracking-tighter">
-                <Key className="w-3 h-3" /> Google Gemini API Key
-              </label>
-              <Input
-                type="password"
-                placeholder="Enter Gemini Key..."
-                value={settings.geminiKey}
-                onChange={(e) => updateSettings({ geminiKey: e.target.value })}
-                className="bg-secondary border-none h-9 text-sm"
-              />
-            </div>
-            <div>
-              <label className="text-[10px] text-muted-foreground mb-1 flex items-center gap-1 uppercase font-bold tracking-tighter">
-                <Key className="w-3 h-3" /> OpenRouter API Key
-              </label>
-              <Input
-                type="password"
-                placeholder="Enter OpenRouter Key..."
-                value={settings.openRouterKey}
-                onChange={(e) => updateSettings({ openRouterKey: e.target.value })}
-                className="bg-secondary border-none h-9 text-sm"
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground">Background Persistence</p>
-                <p className="text-[11px] text-muted-foreground">Keep sessions active</p>
-              </div>
-              <Switch
-                checked={settings.stayOnlineBackground}
-                onCheckedChange={(v) => updateSettings({ stayOnlineBackground: v })}
-              />
-            </div>
-            <div className="flex items-center justify-between border-t border-border pt-3">
-              <div>
-                <p className="text-sm text-foreground">System Overlay Bubbles</p>
-                <p className="text-[11px] text-muted-foreground">FB Messenger style (requires permission)</p>
-              </div>
-              <Switch
-                checked={settings.nativeBubblesEnabled}
-                onCheckedChange={(v) => {
-                  if (v) toast.info('Please grant "Display over other apps" permission in Android settings');
-                  updateSettings({ nativeBubblesEnabled: v });
-                }}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Security */}
-        <Card className="border-border bg-card">
-          <CardHeader className="p-4 pb-2">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Shield className="w-4 h-4 text-primary" /> Security & Incognito
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-4 pt-0 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-foreground">Incognito Mode</p>
-                <p className="text-[11px] text-muted-foreground">Disguise as calculator</p>
-              </div>
-              <Switch
-                checked={settings.incognitoEnabled}
-                onCheckedChange={(v) => updateSettings({ incognitoEnabled: v })}
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground mb-1 block">PIN Code</label>
-              <Input
-                type="password"
-                value={settings.pin}
-                onChange={(e) => updateSettings({ pin: e.target.value })}
-                className="bg-secondary border-none h-9 text-sm"
-                maxLength={8}
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-foreground">Auto-download Media</p>
-              <Switch
-                checked={settings.mediaAutoDownload}
-                onCheckedChange={(v) => updateSettings({ mediaAutoDownload: v })}
-              />
-            </div>
-            <button
-              onClick={() => setUnlocked(false)}
-              className="flex items-center gap-2 text-sm text-destructive py-2 px-3 bg-destructive/10 rounded-lg w-full"
-            >
-              <Lock className="w-4 h-4" /> Lock App Now
-            </button>
-          </CardContent>
-        </Card>
+        {/* Lock App */}
+        <button
+          onClick={() => setUnlocked(false)}
+          className="w-full py-4 bg-destructive/10 border border-destructive/20 text-destructive rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-destructive hover:text-white transition-all"
+        >
+          <Lock className="w-4 h-4 inline-block mr-2" /> Kill Session & Lock
+        </button>
       </div>
     </div>
   );
